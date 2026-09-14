@@ -337,7 +337,7 @@ const fontTexture =
 
     updateModeButtonVisuals();
 }
-            function createModeButton(label, mode) {
+           function createModeButton(label, mode) {
 
     const button = new ThreeMeshUI.Block({
         width: 0.145,
@@ -354,25 +354,48 @@ const fontTexture =
         backgroundOpacity: 1.0
     });
 
-
     const text = new ThreeMeshUI.Text({
         content: label,
         fontSize: 0.027,
         fontColor: new THREE.Color(0xffffff)
     });
 
-
     button.add(text);
+
+
+    // Área invisível usada somente para detectar o clique
+    const hitGeometry = new THREE.PlaneGeometry(
+    0.16,
+    0.09
+);
+
+    const hitMaterial = new THREE.MeshBasicMaterial({
+        transparent: true,
+        opacity: 0.0,
+        side: THREE.DoubleSide,
+        depthWrite: false
+    });
+
+    const hitArea = new THREE.Mesh(
+        hitGeometry,
+        hitMaterial
+    );
+
+    // Pequeno deslocamento para ficar sobre a face do botão
+    hitArea.position.z = 0.002;
+
+    button.add(hitArea);
 
 
     modeButtons.push({
         object: button,
+        hitArea: hitArea,
         mode: mode
     });
 
-
     return button;
 }
+            
         function updateModeButtonVisuals() {
 
     for (const buttonInfo of modeButtons) {
@@ -415,17 +438,19 @@ const fontTexture =
         .applyMatrix4(uiRayMatrix)
         .normalize();
 
+
     let closestButton = null;
     let closestDistance = Infinity;
 
+
     for (const buttonInfo of modeButtons) {
 
-        buttonInfo.object.updateMatrixWorld(true);
+        buttonInfo.hitArea.updateMatrixWorld(true);
 
         const intersections =
             uiRaycaster.intersectObject(
-                buttonInfo.object,
-                true
+                buttonInfo.hitArea,
+                false
             );
 
         if (
@@ -441,8 +466,10 @@ const fontTexture =
         }
     }
 
+
     return closestButton;
 }
+
             
             
         function makeInstructionsUI() {
