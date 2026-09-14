@@ -461,7 +461,7 @@
                     const controllerToUse = renderer.xr.getController(i);
 
                     if (triggerButton.pressed) {
-                        const offsetPosition = controllerToUse.localToWorld(new THREE.Vector3(0, 0, 0.045));
+                        const offsetPosition = controllerToUse.localToWorld(new THREE.Vector3(0, 0, -0.105));
                         group.position.copy(offsetPosition);
                         group.setRotationFromQuaternion(controllerToUse.quaternion);
                     }
