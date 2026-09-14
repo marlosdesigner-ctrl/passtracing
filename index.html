@@ -127,6 +127,15 @@
         let currentScale = 1.0;
         let previousDidPressHideImage = false;
         let previousDidPressHideInstructions = false;
+        let currentMode = "scale";
+
+let modePanel = null;
+let modeButtons = [];
+
+const uiRaycaster = new THREE.Raycaster();
+const uiRayMatrix = new THREE.Matrix4();
+
+let previousTriggerPressed = [false, false];
 
         init();
         animate();
@@ -166,8 +175,10 @@
 
             // UI
 
-            makeInstructionsUI();
+           makeInstructionsUI();
+            makeModeUI();
 
+            
             // Load image
 
             const length = 0.25;
@@ -206,6 +217,193 @@
             sendToQuestLink.onclick = sendUrlToQuest;
         }
 
+ function makeModeUI() {
+
+ const fontFamily =
+    'https://unpkg.com/three-mesh-ui@6.5.2/examples/assets/Roboto-msdf.json';
+
+const fontTexture =
+    'https://unpkg.com/three-mesh-ui@6.5.2/examples/assets/Roboto-msdf.png';
+
+    modePanel = new ThreeMeshUI.Block({
+        width: 0.72,
+        height: 0.22,
+        padding: 0.025,
+
+        contentDirection: 'column',
+        justifyContent: 'center',
+        alignContent: 'center',
+
+        borderRadius: 0.025,
+
+        backgroundColor: new THREE.Color(0x20252b),
+        backgroundOpacity: 0.90,
+
+        fontFamily: fontFamily,
+        fontTexture: fontTexture
+    });
+
+
+    modePanel.position.set(0, 0.32, -0.70);
+
+
+    const title = new ThreeMeshUI.Text({
+        content: "POITA  •  CONTROLE",
+        fontSize: 0.032,
+        fontColor: new THREE.Color(0xffffff)
+    });
+
+
+    const buttonRow = new ThreeMeshUI.Block({
+        width: 0.66,
+        height: 0.10,
+
+        margin: 0.015,
+
+        contentDirection: 'row',
+        justifyContent: 'center',
+        alignContent: 'center',
+
+        backgroundOpacity: 0
+    });
+
+
+    const scaleButton = createModeButton(
+        "ESCALA",
+        "scale"
+    );
+
+    const xButton = createModeButton(
+        "X",
+        "x"
+    );
+
+    const yButton = createModeButton(
+        "Y",
+        "y"
+    );
+
+    const zButton = createModeButton(
+        "Z",
+        "z"
+    );
+
+
+    buttonRow.add(
+        scaleButton,
+        xButton,
+        yButton,
+        zButton
+    );
+
+
+    modePanel.add(
+        title,
+        buttonRow
+    );
+
+
+    scene.add(modePanel);
+
+    updateModeButtonVisuals();
+}
+            function createModeButton(label, mode) {
+
+    const button = new ThreeMeshUI.Block({
+        width: 0.145,
+        height: 0.075,
+
+        margin: 0.008,
+
+        justifyContent: 'center',
+        alignContent: 'center',
+
+        borderRadius: 0.015,
+
+        backgroundColor: new THREE.Color(0x404750),
+        backgroundOpacity: 1.0
+    });
+
+
+    const text = new ThreeMeshUI.Text({
+        content: label,
+        fontSize: 0.027,
+        fontColor: new THREE.Color(0xffffff)
+    });
+
+
+    button.add(text);
+
+
+    modeButtons.push({
+        object: button,
+        mode: mode
+    });
+
+
+    return button;
+}
+        function updateModeButtonVisuals() {
+
+    for (const buttonInfo of modeButtons) {
+
+        if (buttonInfo.mode === currentMode) {
+
+            buttonInfo.object.set({
+                backgroundColor:
+                    new THREE.Color(0xff8800)
+            });
+
+        } else {
+
+            buttonInfo.object.set({
+                backgroundColor:
+                    new THREE.Color(0x404750)
+            });
+
+        }
+    }
+}
+                    function getHoveredModeButton(controller) {
+
+    controller.updateMatrixWorld(true);
+
+
+    uiRayMatrix.identity().extractRotation(
+        controller.matrixWorld
+    );
+
+
+    uiRaycaster.ray.origin.setFromMatrixPosition(
+        controller.matrixWorld
+    );
+
+
+    uiRaycaster.ray.direction
+        .set(0, 0, -1)
+        .applyMatrix4(uiRayMatrix)
+        .normalize();
+
+
+    for (const buttonInfo of modeButtons) {
+
+        const intersections =
+            uiRaycaster.intersectObject(
+                buttonInfo.object,
+                true
+            );
+
+
+        if (intersections.length > 0) {
+            return buttonInfo;
+        }
+    }
+
+
+    return null;
+}
+
+            
         function makeInstructionsUI() {
             const textContainer = new ThreeMeshUI.Block({
                 borderRadius: 0.05,
@@ -446,28 +644,103 @@
                     const axButton = gamepad.buttons[4];
                     const byButton = gamepad.buttons[5];
 
-                    if (vertical > 0.7) {
-                        incrementScale(-1.0 * elapsedTime);
-                    } else if (vertical < -0.7) {
-                        incrementScale(1.0 * elapsedTime);
-                    }
+                   if (currentMode === "scale") {
 
-                    if (horizontal > 0.7) {
-                        incrementOpacity(1.0 * elapsedTime);
-                    } else if (horizontal < -0.7) {
-                        incrementOpacity(-1.0 * elapsedTime);
-                    }
+    if (vertical > 0.7) {
+
+        incrementScale(
+            -1.0 * elapsedTime
+        );
+
+    } else if (vertical < -0.7) {
+
+        incrementScale(
+            1.0 * elapsedTime
+        );
+    }
+
+
+    if (horizontal > 0.7) {
+
+        incrementOpacity(
+            1.0 * elapsedTime
+        );
+
+    } else if (horizontal < -0.7) {
+
+        incrementOpacity(
+            -1.0 * elapsedTime
+        );
+    }
+}
+                    
 
                     // FIXME: This index won't match the correct controller
                     // if a disconnection happens during the session.
-                    const controllerToUse = renderer.xr.getController(i);
+                   const controllerToUse =
+    renderer.xr.getController(i);
 
-                    if (triggerButton.pressed) {
-                        const offsetPosition = controllerToUse.localToWorld(new THREE.Vector3(0, 0, -0.105));
-                        group.position.copy(offsetPosition);
-                        group.setRotationFromQuaternion(controllerToUse.quaternion);
-                    }
 
+const hoveredModeButton =
+    getHoveredModeButton(controllerToUse);
+
+
+const triggerJustPressed =
+    triggerButton.pressed &&
+    !previousTriggerPressed[i];
+
+
+if (
+    hoveredModeButton != null &&
+    triggerJustPressed
+) {
+
+    currentMode =
+        hoveredModeButton.mode;
+
+
+    updateModeButtonVisuals();
+
+
+    console.log(
+        "POITA modo:",
+        currentMode
+    );
+
+}
+
+
+// Se NÃO estiver apontando para a interface,
+// o gatilho continua reposicionando a imagem.
+
+if (
+    hoveredModeButton == null &&
+    triggerButton.pressed
+) {
+
+    const offsetPosition =
+        controllerToUse.localToWorld(
+            new THREE.Vector3(
+                0,
+                0,
+                -0.105
+            )
+        );
+
+
+    group.position.copy(
+        offsetPosition
+    );
+
+
+    group.setRotationFromQuaternion(
+        controllerToUse.quaternion
+    );
+}
+
+
+previousTriggerPressed[i] =
+    triggerButton.pressed;
                     if (axButton.pressed) {
                         didPressHideImage = true;
                     }
