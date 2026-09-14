@@ -132,6 +132,9 @@
 let modePanel = null;
 let modeButtons = [];
 
+let menuHitArea = null;
+let hoveredMode = null;
+
 const uiRaycaster = new THREE.Raycaster();
 const uiRayMatrix = new THREE.Matrix4();
 
@@ -276,6 +279,31 @@ const fontTexture =
 
     modePanel.position.set(0, 0.32, -0.70);
 
+     const menuHitGeometry = new THREE.PlaneGeometry(
+    0.76,
+    0.25
+);
+
+const menuHitMaterial = new THREE.MeshBasicMaterial({
+    transparent: true,
+    opacity: 0.0,
+    side: THREE.DoubleSide,
+    depthWrite: false
+});
+
+menuHitArea = new THREE.Mesh(
+    menuHitGeometry,
+    menuHitMaterial
+);
+
+menuHitArea.position.z = 0.001;
+
+// Adiciona como objeto Three.js normal
+THREE.Object3D.prototype.add.call(
+    modePanel,
+    menuHitArea
+);
+
 
     const title = new ThreeMeshUI.Text({
         content: "POITA  •  CONTROLE",
@@ -342,7 +370,6 @@ const fontTexture =
     const button = new ThreeMeshUI.Block({
         width: 0.145,
         height: 0.075,
-
         margin: 0.008,
 
         justifyContent: 'center',
@@ -354,6 +381,7 @@ const fontTexture =
         backgroundOpacity: 1.0
     });
 
+
     const text = new ThreeMeshUI.Text({
         content: label,
         fontSize: 0.027,
@@ -363,11 +391,11 @@ const fontTexture =
     button.add(text);
 
 
-    // Área invisível usada somente para detectar o clique
+    // Área invisível de seleção
     const hitGeometry = new THREE.PlaneGeometry(
-    0.16,
-    0.09
-);
+        0.16,
+        0.09
+    );
 
     const hitMaterial = new THREE.MeshBasicMaterial({
         transparent: true,
@@ -381,10 +409,13 @@ const fontTexture =
         hitMaterial
     );
 
-    // Pequeno deslocamento para ficar sobre a face do botão
-    hitArea.position.z = 0.002;
+    hitArea.position.z = 0.003;
 
-    button.add(hitArea);
+
+    THREE.Object3D.prototype.add.call(
+        button,
+        hitArea
+    );
 
 
     modeButtons.push({
@@ -393,6 +424,7 @@ const fontTexture =
         mode: mode
     });
 
+
     return button;
 }
             
@@ -400,7 +432,14 @@ const fontTexture =
 
     for (const buttonInfo of modeButtons) {
 
-        if (buttonInfo.mode === currentMode) {
+        const isSelected =
+            buttonInfo.mode === currentMode;
+
+        const isHovered =
+            buttonInfo.mode === hoveredMode;
+
+
+        if (isSelected || isHovered) {
 
             buttonInfo.object.set({
                 backgroundColor:
@@ -417,7 +456,8 @@ const fontTexture =
         }
     }
 }
-                   function getHoveredModeButton(controller) {
+            
+function getHoveredModeButton(controller) {
 
     controller.updateMatrixWorld(true);
 
@@ -466,11 +506,45 @@ const fontTexture =
         }
     }
 
-
     return closestButton;
 }
 
-            
+
+
+function isPointerOverModePanel(controller) {
+
+    if (
+        menuHitArea == null ||
+        modePanel == null
+    ) {
+        return false;
+    }
+
+    controller.updateMatrixWorld(true);
+    modePanel.updateMatrixWorld(true);
+    menuHitArea.updateMatrixWorld(true);
+
+    uiRayMatrix.identity().extractRotation(
+        controller.matrixWorld
+    );
+
+    uiRaycaster.ray.origin.setFromMatrixPosition(
+        controller.matrixWorld
+    );
+
+    uiRaycaster.ray.direction
+        .set(0, 0, -1)
+        .applyMatrix4(uiRayMatrix)
+        .normalize();
+
+    const intersections =
+        uiRaycaster.intersectObject(
+            menuHitArea,
+            false
+        );
+
+    return intersections.length > 0;
+}         
             
         function makeInstructionsUI() {
             const textContainer = new ThreeMeshUI.Block({
@@ -699,6 +773,8 @@ const fontTexture =
             let didPressHideImage = false;
             let didPressHideInstructions = false;
 
+            hoveredMode = null;
+
             if (xrSession == null || xrSession.inputSources.length <= 0) {
                 return;
             }
@@ -757,13 +833,36 @@ const fontTexture =
 
 
 const hoveredModeButton =
-    getHoveredModeButton(controllerToUse);
+    getHoveredModeButton(
+        controllerToUse
+    );
 
+
+const pointerOverModePanel =
+    isPointerOverModePanel(
+        controllerToUse
+    );
+
+
+// HOVER
+// Basta apontar para o botão.
+// Não precisa apertar gatilho.
+
+if (hoveredModeButton != null) {
+
+    hoveredMode =
+        hoveredModeButton.mode;
+}
+
+// Detecta somente o instante inicial
+// do aperto do gatilho.
 
 const triggerJustPressed =
     triggerButton.pressed &&
     !previousTriggerPressed[i];
 
+
+// CLIQUE EM BOTÃO
 
 if (
     hoveredModeButton != null &&
@@ -773,23 +872,22 @@ if (
     currentMode =
         hoveredModeButton.mode;
 
-
     updateModeButtonVisuals();
-
 
     console.log(
         "POITA modo:",
         currentMode
     );
-
 }
 
 
-// Se NÃO estiver apontando para a interface,
-// o gatilho continua reposicionando a imagem.
+// REPOSICIONAMENTO DO MURAL
+//
+// Só pode acontecer quando o ponteiro
+// estiver completamente FORA do painel.
 
 if (
-    hoveredModeButton == null &&
+    !pointerOverModePanel &&
     triggerButton.pressed
 ) {
 
@@ -826,6 +924,8 @@ previousTriggerPressed[i] =
                 }
             }
 
+            updateModeButtonVisuals();            
+            
             const shouldChangeInstructionsVisibility = (!didPressHideInstructions && previousDidPressHideInstructions);
             previousDidPressHideInstructions = didPressHideInstructions;
 
