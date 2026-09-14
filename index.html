@@ -741,6 +741,33 @@ function isPointerOverModePanel(controller) {
     }
 }
 
+            function moveImage(axis, delta) {
+
+    if (group == null) {
+        return;
+    }
+
+    const moveSpeed = 0.35;
+
+    const distance =
+        delta * moveSpeed;
+
+
+    if (axis === "x") {
+
+        group.translateX(distance);
+
+    } else if (axis === "y") {
+
+        group.translateY(distance);
+
+    } else if (axis === "z") {
+
+        group.translateZ(distance);
+
+    }
+}
+
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
@@ -797,6 +824,10 @@ function isPointerOverModePanel(controller) {
 
                    if (currentMode === "scale") {
 
+    // ESCALA
+    // Cima aumenta
+    // Baixo diminui
+
     if (vertical > 0.7) {
 
         incrementScale(
@@ -811,6 +842,10 @@ function isPointerOverModePanel(controller) {
     }
 
 
+    // OPACIDADE
+    // Direita aumenta
+    // Esquerda diminui
+
     if (horizontal > 0.7) {
 
         incrementOpacity(
@@ -821,6 +856,73 @@ function isPointerOverModePanel(controller) {
 
         incrementOpacity(
             -1.0 * elapsedTime
+        );
+    }
+
+
+
+} else if (currentMode === "x") {
+
+    // MOVIMENTO X
+    // Direita / esquerda
+
+    if (horizontal > 0.25) {
+
+        moveImage(
+            "x",
+            elapsedTime
+        );
+
+    } else if (horizontal < -0.25) {
+
+        moveImage(
+            "x",
+            -elapsedTime
+        );
+    }
+
+
+
+} else if (currentMode === "y") {
+
+    // MOVIMENTO Y
+    // Cima / baixo
+
+    if (vertical < -0.25) {
+
+        moveImage(
+            "y",
+            elapsedTime
+        );
+
+    } else if (vertical > 0.25) {
+
+        moveImage(
+            "y",
+            -elapsedTime
+        );
+    }
+
+
+
+} else if (currentMode === "z") {
+
+    // MOVIMENTO Z
+    // Cima aproxima
+    // Baixo afasta
+
+    if (vertical < -0.25) {
+
+        moveImage(
+            "z",
+            -elapsedTime
+        );
+
+    } else if (vertical > 0.25) {
+
+        moveImage(
+            "z",
+            elapsedTime
         );
     }
 }
