@@ -167,11 +167,41 @@ let previousTriggerPressed = [false, false];
 
             // Controllers
 
-            controller1 = renderer.xr.getController(0);
-            scene.add(controller1);
+           controller1 = renderer.xr.getController(0);
+scene.add(controller1);
 
-            controller2 = renderer.xr.getController(1);
-            scene.add(controller2);
+controller2 = renderer.xr.getController(1);
+scene.add(controller2);
+
+
+const rayGeometry =
+    new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(0, 0, 0),
+        new THREE.Vector3(0, 0, -1)
+    ]);
+
+
+const rayMaterial =
+    new THREE.LineBasicMaterial({
+        color: 0xffffff
+    });
+
+
+const ray1 =
+    new THREE.Line(
+        rayGeometry,
+        rayMaterial
+    );
+
+ray1.scale.z = 3;
+
+controller1.add(ray1);
+
+
+const ray2 =
+    ray1.clone();
+
+controller2.add(ray2);
 
             // UI
 
@@ -364,28 +394,33 @@ const fontTexture =
         }
     }
 }
-                    function getHoveredModeButton(controller) {
+                   function getHoveredModeButton(controller) {
 
     controller.updateMatrixWorld(true);
 
+    if (modePanel != null) {
+        modePanel.updateMatrixWorld(true);
+    }
 
     uiRayMatrix.identity().extractRotation(
         controller.matrixWorld
     );
 
-
     uiRaycaster.ray.origin.setFromMatrixPosition(
         controller.matrixWorld
     );
-
 
     uiRaycaster.ray.direction
         .set(0, 0, -1)
         .applyMatrix4(uiRayMatrix)
         .normalize();
 
+    let closestButton = null;
+    let closestDistance = Infinity;
 
     for (const buttonInfo of modeButtons) {
+
+        buttonInfo.object.updateMatrixWorld(true);
 
         const intersections =
             uiRaycaster.intersectObject(
@@ -393,16 +428,22 @@ const fontTexture =
                 true
             );
 
+        if (
+            intersections.length > 0 &&
+            intersections[0].distance < closestDistance
+        ) {
 
-        if (intersections.length > 0) {
-            return buttonInfo;
+            closestDistance =
+                intersections[0].distance;
+
+            closestButton =
+                buttonInfo;
         }
     }
 
-
-    return null;
+    return closestButton;
 }
-
+            
             
         function makeInstructionsUI() {
             const textContainer = new ThreeMeshUI.Block({
@@ -611,11 +652,18 @@ const fontTexture =
             renderer.setAnimationLoop(loop);
         }
 
-        function loop() {
-            updateInput();
-            ThreeMeshUI.update();
-            renderer.render(scene, camera);
-        }
+       function loop() {
+    ThreeMeshUI.update();
+
+    if (modePanel != null) {
+        modePanel.updateMatrixWorld(true);
+    }
+
+    updateInput();
+
+    renderer.render(scene, camera);
+}
+            
 
         function updateInput() {
             const xrSession = renderer.xr.getSession();
