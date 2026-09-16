@@ -206,10 +206,11 @@
         let currentScale = 1.0;
         let previousDidPressHideImage = false;
        
-        let currentMode = "scale";
+      let currentMode = "scale";
 
 let modePanel = null;
 let modeButtons = [];
+
 let menuHitArea = null;
 let hoveredMode = null;
 
@@ -248,7 +249,7 @@ let previousTriggerPressed = [false, false];
 
             // Controllers
 
-           controller1 = renderer.xr.getController(0);
+controller1 = renderer.xr.getController(0);
 scene.add(controller1);
 
 controller2 = renderer.xr.getController(1);
@@ -511,19 +512,18 @@ buttonRow.add(
     yButton,
     zButton
 );
-
+    
 modePanel.add(
     title,
     buttonRow
 );
 
-scene.add(
+controller1.add(
     modePanel
 );
 
 updateModeButtonVisuals();
 }
-
 
 
 function createModeButton(label, mode) {
