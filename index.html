@@ -214,6 +214,9 @@ let modeButtons = [];
 let menuHitArea = null;
 let hoveredMode = null;
 
+let minimizeButton = null;
+let minimizeHitArea = null;
+let minimizeHovered = false;
 
     
 const uiRaycaster = new THREE.Raycaster();
@@ -467,6 +470,64 @@ function makeModeUI() {
             fontColor: new THREE.Color(0xffffff)
         });
 
+    minimizeButton =
+    new ThreeMeshUI.Block({
+        width: 0.055,
+        height: 0.045,
+        justifyContent: 'center',
+        alignContent: 'center',
+        borderRadius: 0.008,
+        backgroundColor:
+            new THREE.Color(0x404750),
+        backgroundOpacity: 1.0
+    });
+
+
+const minimizeText =
+    new ThreeMeshUI.Text({
+        content: "−",
+        fontSize: 0.032,
+        fontColor:
+            new THREE.Color(0xffffff)
+    });
+
+
+minimizeButton.add(
+    minimizeText
+);
+
+
+const minimizeHitGeometry =
+    new THREE.PlaneGeometry(
+        0.07,
+        0.06
+    );
+
+
+const minimizeHitMaterial =
+    new THREE.MeshBasicMaterial({
+        transparent: true,
+        opacity: 0.0,
+        side: THREE.DoubleSide,
+        depthWrite: false
+    });
+
+
+minimizeHitArea =
+    new THREE.Mesh(
+        minimizeHitGeometry,
+        minimizeHitMaterial
+    );
+
+
+minimizeHitArea.position.z =
+    0.003;
+
+
+THREE.Object3D.prototype.add.call(
+    minimizeButton,
+    minimizeHitArea
+);
 
     const buttonRow =
         new ThreeMeshUI.Block({
@@ -516,10 +577,11 @@ function makeModeUI() {
     );
 
 
-    modePanel.add(
-        title,
-        buttonRow
-    );
+   modePanel.add(
+    title,
+    minimizeButton,
+    buttonRow
+);
 
 
     scene.add(
