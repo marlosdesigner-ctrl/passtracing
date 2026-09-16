@@ -70,6 +70,49 @@
 .poitaHidden {
     display: none;
 }
+            .poitaPreview {
+    width: 260px;
+    height: 160px;
+
+    margin: 0 auto 18px auto;
+
+    border: 1px solid rgba(255,255,255,0.20);
+    border-radius: 8px;
+
+    overflow: hidden;
+
+    background: #090b0d;
+}
+
+.poitaPreview img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: contain;
+}
+
+.poitaStatus {
+    margin-bottom: 28px;
+
+    font-size: 11px;
+    letter-spacing: 3px;
+
+    opacity: 0.55;
+}
+
+.poitaSecondaryButton {
+    display: block;
+
+    margin: 14px auto 0 auto;
+
+    color: rgba(255,255,255,0.55);
+    text-decoration: none;
+
+    font-size: 11px;
+    letter-spacing: 2px;
+
+    cursor: pointer;
+}
         </style>
         
     </head>
@@ -274,6 +317,17 @@ const poitaWelcome =
 const poitaImageScreen =
     document.getElementById("poitaImageScreen");
 
+        const poitaReadyScreen =
+    document.getElementById("poitaReadyScreen");
+
+const poitaImagePreview =
+    document.getElementById("poitaImagePreview");
+
+const startPoitaLink =
+    document.getElementById("startPoitaLink");
+
+const changePoitaImageLink =
+    document.getElementById("changePoitaImageLink");
 
 enterPoitaLink.onclick = function (event) {
 
@@ -298,13 +352,40 @@ localImageLink.onclick = function (event) {
 
     event.preventDefault();
 
+    imageFileInput.value = "";
+
     imageFileInput.click();
 };
 
 imageFileInput.onchange =
     handleLocalImage;
-            
-          
+
+   changePoitaImageLink.onclick =
+    function (event) {
+
+        event.preventDefault();
+
+        imageFileInput.value = "";
+
+        imageFileInput.click();
+    };
+          startPoitaLink.onclick =
+    function (event) {
+
+        event.preventDefault();
+
+        const arButton =
+            document.getElementById("ARButton");
+
+        if (arButton != null) {
+
+            poitaReadyScreen.classList.add(
+                "poitaHidden"
+            );
+
+            arButton.click();
+        }
+    };
         }
 
  function makeModeUI() {
@@ -734,12 +815,41 @@ function isPointerOverModePanel(controller) {
         return;
     }
 
-    const localImageUrl =
-        URL.createObjectURL(file);
+   const localImageUrl =
+    URL.createObjectURL(file);
 
-    replaceImage(
-        localImageUrl
+const poitaImagePreview =
+    document.getElementById(
+        "poitaImagePreview"
     );
+
+const poitaImageScreen =
+    document.getElementById(
+        "poitaImageScreen"
+    );
+
+const poitaReadyScreen =
+    document.getElementById(
+        "poitaReadyScreen"
+    );
+
+
+poitaImagePreview.src =
+    localImageUrl;
+
+
+replaceImage(
+    localImageUrl
+);
+
+
+poitaImageScreen.classList.add(
+    "poitaHidden"
+);
+
+poitaReadyScreen.classList.remove(
+    "poitaHidden"
+);
 }
 
         function replaceImage(url) {
@@ -1231,6 +1341,51 @@ previousTriggerPressed[i] =
             class="poitaButton"
         >
             ABRIR IMAGEM
+        </a>
+
+    </div>
+</div>
+        da tela poitaImageScreen, mas antes de </body>, acrescente:
+
+<div
+    id="poitaReadyScreen"
+    class="poitaScreen poitaHidden"
+>
+    <div class="poitaCard">
+
+        <div class="poitaLogo">
+            POITA
+        </div>
+
+        <div class="poitaSubtitle">
+            MURALLOCK SYSTEM
+        </div>
+
+        <div class="poitaPreview">
+            <img
+                id="poitaImagePreview"
+                alt="Imagem selecionada"
+            >
+        </div>
+
+        <div class="poitaStatus">
+            IMAGEM CARREGADA
+        </div>
+
+        <a
+            href="#"
+            id="startPoitaLink"
+            class="poitaButton"
+        >
+            INICIAR
+        </a>
+
+        <a
+            href="#"
+            id="changePoitaImageLink"
+            class="poitaSecondaryButton"
+        >
+            TROCAR IMAGEM
         </a>
 
     </div>
