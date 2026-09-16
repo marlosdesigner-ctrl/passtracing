@@ -214,16 +214,8 @@ let modeButtons = [];
 let menuHitArea = null;
 let hoveredMode = null;
 
-let modeButtonRow = null;
 
-let minimizeButton = null;
-let minimizeHitArea = null;
-
-let expandButton = null;
-let expandHitArea = null;
-
-let modePanelMinimized = false;
-            
+    
 const uiRaycaster = new THREE.Raycaster();
 const uiRayMatrix = new THREE.Matrix4();
 
@@ -405,7 +397,7 @@ imageFileInput.onchange =
     };
         }
 
-        function makeModeUI() {
+function makeModeUI() {
 
     const fontFamily =
         'https://unpkg.com/three-mesh-ui@6.5.2/examples/assets/Roboto-msdf.json';
@@ -413,11 +405,6 @@ imageFileInput.onchange =
     const fontTexture =
         'https://unpkg.com/three-mesh-ui@6.5.2/examples/assets/Roboto-msdf.png';
 
-
-    // =====================================================
-    // PAINEL PRINCIPAL
-    // Mantém a estrutura que já funcionava no Quest.
-    // =====================================================
 
     modePanel = new ThreeMeshUI.Block({
         width: 0.72,
@@ -446,12 +433,6 @@ imageFileInput.onchange =
         -0.70
     );
 
-
-    // =====================================================
-    // ÁREA INVISÍVEL DO PAINEL
-    // Impede o gatilho de mover o mural quando
-    // estiver apontando para a interface.
-    // =====================================================
 
     const menuHitGeometry =
         new THREE.PlaneGeometry(
@@ -486,10 +467,6 @@ imageFileInput.onchange =
     );
 
 
-    // =====================================================
-    // TÍTULO
-    // =====================================================
-
     const title =
         new ThreeMeshUI.Text({
             content:
@@ -504,26 +481,15 @@ imageFileInput.onchange =
         });
 
 
-    // =====================================================
-    // LINHA DOS BOTÕES
-    // Estrutura original validada.
-    // =====================================================
-
-    modeButtonRow =
+    const buttonRow =
         new ThreeMeshUI.Block({
             width: 0.66,
             height: 0.10,
-
             margin: 0.015,
 
-            contentDirection:
-                'row',
-
-            justifyContent:
-                'center',
-
-            alignContent:
-                'center',
+            contentDirection: 'row',
+            justifyContent: 'center',
+            alignContent: 'center',
 
             backgroundOpacity: 0
         });
@@ -557,7 +523,7 @@ imageFileInput.onchange =
         );
 
 
-    modeButtonRow.add(
+    buttonRow.add(
         scaleButton,
         xButton,
         yButton,
@@ -567,7 +533,7 @@ imageFileInput.onchange =
 
     modePanel.add(
         title,
-        modeButtonRow
+        buttonRow
     );
 
 
@@ -576,237 +542,7 @@ imageFileInput.onchange =
     );
 
 
-    // =====================================================
-    // BOTÃO −
-    //
-    // IMPORTANTE:
-    // Ele NÃO faz parte da estrutura interna do modePanel.
-    // É um objeto independente colocado visualmente
-    // sobre a barra.
-    // =====================================================
-
-    minimizeButton =
-        new ThreeMeshUI.Block({
-            width: 0.07,
-            height: 0.055,
-
-            justifyContent:
-                'center',
-
-            alignContent:
-                'center',
-
-            borderRadius: 0.012,
-
-            backgroundColor:
-                new THREE.Color(
-                    0x404750
-                ),
-
-            backgroundOpacity: 1.0,
-
-            fontFamily: fontFamily,
-            fontTexture: fontTexture
-        });
-
-
-    const minimizeText =
-        new ThreeMeshUI.Text({
-            content: "−",
-
-            fontSize: 0.035,
-
-            fontColor:
-                new THREE.Color(
-                    0xffffff
-                )
-        });
-
-
-    minimizeButton.add(
-        minimizeText
-    );
-
-
-    // Posição à direita do painel.
-
-    minimizeButton.position.set(
-        0.29,
-        0.375,
-        -0.695
-    );
-
-
-    // =====================================================
-    // HIT AREA DO −
-    // =====================================================
-
-    const minimizeGeometry =
-        new THREE.PlaneGeometry(
-            0.08,
-            0.065
-        );
-
-
-    const minimizeMaterial =
-        new THREE.MeshBasicMaterial({
-            transparent: true,
-            opacity: 0.0,
-            side: THREE.DoubleSide,
-            depthWrite: false
-        });
-
-
-    minimizeHitArea =
-        new THREE.Mesh(
-            minimizeGeometry,
-            minimizeMaterial
-        );
-
-
-    minimizeHitArea.position.z =
-        0.003;
-
-
-    THREE.Object3D.prototype.add.call(
-        minimizeButton,
-        minimizeHitArea
-    );
-
-
-    scene.add(
-        minimizeButton
-    );
-
-
-    // =====================================================
-    // BOTÃO +
-    //
-    // Também independente.
-    // Começa invisível.
-    // =====================================================
-
-    expandButton =
-        new ThreeMeshUI.Block({
-            width: 0.09,
-            height: 0.07,
-
-            justifyContent:
-                'center',
-
-            alignContent:
-                'center',
-
-            borderRadius: 0.015,
-
-            backgroundColor:
-                new THREE.Color(
-                    0x20252b
-                ),
-
-            backgroundOpacity: 0.95,
-
-            fontFamily: fontFamily,
-            fontTexture: fontTexture
-        });
-
-
-    const expandText =
-        new ThreeMeshUI.Text({
-            content: "+",
-
-            fontSize: 0.040,
-
-            fontColor:
-                new THREE.Color(
-                    0xffffff
-                )
-        });
-
-
-    expandButton.add(
-        expandText
-    );
-
-
-    // Quando minimizado, o + ficará
-    // aproximadamente onde estava o painel.
-
-    expandButton.position.set(
-        0,
-        0.32,
-        -0.70
-    );
-
-
-    expandButton.visible =
-        false;
-
-
-    // =====================================================
-    // HIT AREA DO +
-    // =====================================================
-
-    const expandGeometry =
-        new THREE.PlaneGeometry(
-            0.11,
-            0.09
-        );
-
-
-    const expandMaterial =
-        new THREE.MeshBasicMaterial({
-            transparent: true,
-            opacity: 0.0,
-            side: THREE.DoubleSide,
-            depthWrite: false
-        });
-
-
-    expandHitArea =
-        new THREE.Mesh(
-            expandGeometry,
-            expandMaterial
-        );
-
-
-    expandHitArea.position.z =
-        0.003;
-
-
-    THREE.Object3D.prototype.add.call(
-        expandButton,
-        expandHitArea
-    );
-
-
-    scene.add(
-        expandButton
-    );
-
-
-    // =====================================================
-    // ESTADO INICIAL
-    // =====================================================
-
-    modePanelMinimized =
-        false;
-
-
-    modePanel.visible =
-        true;
-
-
-    minimizeButton.visible =
-        true;
-
-
-    expandButton.visible =
-        false;
-
-
     updateModeButtonVisuals();
-}
             
            function createModeButton(label, mode) {
 
@@ -987,100 +723,10 @@ function isPointerOverModePanel(controller) {
         );
 
     return intersections.length > 0;
-}         
-function isPointerOverMinimizeButton(
-    controller
-) {
-
-    if (
-        minimizeHitArea == null ||
-        modePanelMinimized
-    ) {
-        return false;
-    }
-
-
-    controller.updateMatrixWorld(true);
-
-    minimizeHitArea.updateMatrixWorld(true);
-
-
-    uiRayMatrix.identity().extractRotation(
-        controller.matrixWorld
-    );
-
-
-    uiRaycaster.ray.origin
-        .setFromMatrixPosition(
-            controller.matrixWorld
-        );
-
-
-    uiRaycaster.ray.direction
-        .set(0, 0, -1)
-        .applyMatrix4(uiRayMatrix)
-        .normalize();
-
-
-    const intersections =
-        uiRaycaster.intersectObject(
-            minimizeHitArea,
-            false
-        );
-
-
-    return intersections.length > 0;
 }
 
-            function isPointerOverExpandButton(
-    controller
-) {
 
-    if (
-        expandHitArea == null ||
-        !modePanelMinimized
-    ) {
-        return false;
-    }
-
-
-    controller.updateMatrixWorld(true);
-
-    expandButton.updateMatrixWorld(true);
-
-    expandHitArea.updateMatrixWorld(true);
-
-
-    uiRayMatrix.identity().extractRotation(
-        controller.matrixWorld
-    );
-
-
-    uiRaycaster.ray.origin
-        .setFromMatrixPosition(
-            controller.matrixWorld
-        );
-
-
-    uiRaycaster.ray.direction
-        .set(0, 0, -1)
-        .applyMatrix4(uiRayMatrix)
-        .normalize();
-
-
-    const intersections =
-        uiRaycaster.intersectObject(
-            expandHitArea,
-            false
-        );
-
-
-    return intersections.length > 0;
-}
-
-            
-            
-        function makeInstructionsUI() {
+function makeInstructionsUI() {
             const textContainer = new ThreeMeshUI.Block({
                 borderRadius: 0.05,
                 width: 0.45,
@@ -1435,8 +1081,7 @@ function (texture) {
             const xrSession = renderer.xr.getSession();
             const elapsedTime = clock.getDelta();
 
-            let didPressHideImage = false;
-            let didPressHideInstructions = false;
+           let didPressHideImage = false;
 
             hoveredMode = null;
 
@@ -1458,7 +1103,7 @@ function (texture) {
 
                     const triggerButton = gamepad.buttons[0];
                     const axButton = gamepad.buttons[4];
-                    const byButton = gamepad.buttons[5];
+                
 
                    if (currentMode === "scale") {
 
@@ -1659,14 +1304,14 @@ previousTriggerPressed[i] =
                     if (axButton.pressed) {
                         didPressHideImage = true;
                     }
-
-                    if (byButton.pressed) {
-                        didPressHideInstructions = true;
-                    }
                 }
             }
 
-            updateModeButtonVisuals();            
+      updateModeButtonVisuals();
+}
+
+
+function createModeButton(label, mode) {         
 
             const shouldChangeImageVisibility = (!didPressHideImage && previousDidPressHideImage);
             previousDidPressHideImage = didPressHideImage;
