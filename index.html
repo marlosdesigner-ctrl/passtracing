@@ -577,10 +577,22 @@ THREE.Object3D.prototype.add.call(
     );
 
 
-   modePanel.add(
+  modePanel.add(
     title,
-    minimizeButton,
     buttonRow
+);
+
+
+minimizeButton.position.set(
+    0.31,
+    0.075,
+    0.004
+);
+
+
+THREE.Object3D.prototype.add.call(
+    modePanel,
+    minimizeButton
 );
 
 
