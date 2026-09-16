@@ -295,7 +295,12 @@ const ray2 =
 
 controller2.add(ray2);
 
-            // Load image
+           // UI
+
+makeModeUI();
+
+
+// Load image
 
 const length = 0.25;
 
@@ -316,13 +321,6 @@ loadTexture(
     length,
     'Images/discovery.jpg'
 );
-
-
-// UI
-// Criamos a interface depois
-// da estrutura principal da imagem.
-
-makeModeUI();
             // Resize event
 
             window.addEventListener('resize', onWindowResize);
@@ -1603,31 +1601,7 @@ const triggerJustPressed =
     triggerButton.pressed &&
     !previousTriggerPressed[i];
 
-    const pointerOverMinimize =
-    isPointerOverMinimizeButton(
-        controllerToUse
-    );
-
-
-const pointerOverExpand =
-    isPointerOverExpandButton(
-        controllerToUse
-    );
-
-
-if (
-    pointerOverMinimize &&
-    triggerJustPressed
-) {
-
-    modePanelMinimized = true;
-
-    modePanel.visible = false;
-    minimizeButton.visible = false;
-
-    expandButton.visible = true;
-}
-
+    
 
 if (
     pointerOverExpand &&
@@ -1669,8 +1643,6 @@ if (
 
 if (
     !pointerOverModePanel &&
-    !pointerOverMinimize &&
-    !pointerOverExpand &&
     triggerButton.pressed
 ) {
     
