@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>Passtracing</title>
+       <title>POITA - Muralock System</title>
         <meta charset="utf-8">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-fork-ribbon-css/0.2.3/gh-fork-ribbon.min.css" />
         <style>
@@ -10,32 +10,68 @@
         .github-fork-ribbon:before { 
             background-color: #f80; 
         }
+.poitaScreen {
+    position: fixed;
+    inset: 0;
 
-        .popupWindow {
-            position: fixed;
-            top: 12.5%;
-            left: 50%;
-            transform: translate(-50%, -12.5%);
-            background-color: #303841;
-            border-radius: 4px;
-            font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
-            color: #EFEFEF;
-            overflow: hidden;
-        }
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-        .popupHeader {
-            background-color: #2E3238; 
-            padding: 8px; 
-            text-align: center; 
-            font-size: 75%;
-        }
+    background: #111418;
 
-        .popupSection {
-            padding: 8px; 
-            white-space: pre-wrap; 
-            background-color: #50565E;
-        }
+    font-family: Arial, sans-serif;
+
+    z-index: 10;
+}
+
+.poitaCard {
+    text-align: center;
+    color: #ffffff;
+}
+
+.poitaLogo {
+    font-size: 52px;
+    font-weight: 700;
+    letter-spacing: 8px;
+    margin-bottom: 6px;
+}
+
+.poitaSubtitle {
+    font-size: 13px;
+    letter-spacing: 5px;
+    opacity: 0.65;
+    margin-bottom: 45px;
+}
+
+.poitaButton {
+    display: inline-block;
+
+    min-width: 180px;
+
+    padding: 14px 28px;
+
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 6px;
+
+    color: #ffffff;
+    text-decoration: none;
+
+    font-size: 14px;
+    letter-spacing: 3px;
+
+    cursor: pointer;
+}
+
+.poitaButton:hover {
+    background: rgba(255,255,255,0.08);
+}
+
+.poitaHidden {
+    display: none;
+}
         </style>
+        
     </head>
     <body style="background-color:black;">
         <!-- Import maps polyfill -->
@@ -214,31 +250,43 @@ controller2.add(ray2);
             
             // Load image
 
-            const length = 0.25;
-            group = new THREE.Group();
-            group.position.set(0, 0, -0.5);
+const length = 0.25;
+group = new THREE.Group();
+group.position.set(0, 0, -0.5);
 
-            scene.add(group);
+scene.add(group);
 
-            const url = new URL(window.location);
-            const imageUrlString = url.searchParams.get('image');
-
-            if (imageUrlString == null) {
-                loadTexture(group, length, 'Images/discovery.jpg');
-            } else {
-                try {
-                    const imageUrl = new URL(imageUrlString);
-                    document.getElementById("urlInput").value = imageUrlString;
-                    loadTexture(group, length, imageUrl.toString());
-                } catch (exception) {
-                    alert("Invalid URL, try a different URL.");
-                }
-            }
-
+loadTexture(
+    group,
+    length,
+    'Images/discovery.jpg'
+);
             // Resize event
 
             window.addEventListener('resize', onWindowResize);
             
+const enterPoitaLink =
+    document.getElementById("enterPoitaLink");
+
+const poitaWelcome =
+    document.getElementById("poitaWelcome");
+
+const poitaImageScreen =
+    document.getElementById("poitaImageScreen");
+
+
+enterPoitaLink.onclick = function (event) {
+
+    event.preventDefault();
+
+    poitaWelcome.classList.add(
+        "poitaHidden"
+    );
+
+    poitaImageScreen.classList.remove(
+        "poitaHidden"
+    );
+};
             
             const localImageLink =
     document.getElementById("localImageLink");
@@ -256,15 +304,7 @@ localImageLink.onclick = function (event) {
 imageFileInput.onchange =
     handleLocalImage;
             
-            // URL Input
-
-            const inputLink = document.getElementById("urlInputLink");
-            inputLink.onclick = changeImageUrl;
-
-            // Send to Quest
-
-            const sendToQuestLink = document.getElementById("urlToQuestLink");
-            sendToQuestLink.onclick = sendUrlToQuest;
+          
         }
 
  function makeModeUI() {
@@ -1137,8 +1177,7 @@ previousTriggerPressed[i] =
 
         </script>
 
-        <a class="github-fork-ribbon" href="https://github.com/fabio914/passtracing" data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
-
+       
         <div id="container"></div>
         <input
     id="imageFileInput"
@@ -1146,13 +1185,55 @@ previousTriggerPressed[i] =
     accept="image/*"
     style="display: none;"
 >
-        <div class="popupWindow">
-            <div class="popupHeader">Passtracing - AR Tracing</div>
-            <div class="popupSection">1. Paste an image URL below.<br/>2. Click on "Load image" or "Send link to Meta Quest".<br/>3. Click on the "Start AR" button below to start.</div>
-            <div class="popupSection"><div style="margin-right: 8px"><input id="urlInput" type="url" style="width: 100%" placeholder="https://paste.some.website/image/here.jpg"/></div></div>
-           <div class="popupSection"><a href="#"style="color: #EFEFEF"id="localImageLink">ABRIR IMAGEM</a></div>
-            <div class="popupSection"><a href="#" style="color: #EFEFEF" id="urlInputLink">Load image</a></div>
-            <div class="popupSection"><a href="#" style="color: #EFEFEF" id="urlToQuestLink">Send link to Meta Quest</a></div>
+        <div
+    id="poitaWelcome"
+    class="poitaScreen"
+>
+    <div class="poitaCard">
+
+        <div class="poitaLogo">
+            POITA
         </div>
+
+        <div class="poitaSubtitle">
+            MURALLOCK SYSTEM
+        </div>
+
+        <a
+            href="#"
+            id="enterPoitaLink"
+            class="poitaButton"
+        >
+            ENTRAR
+        </a>
+
+    </div>
+</div>
+
+
+<div
+    id="poitaImageScreen"
+    class="poitaScreen poitaHidden"
+>
+    <div class="poitaCard">
+
+        <div class="poitaLogo">
+            POITA
+        </div>
+
+        <div class="poitaSubtitle">
+            MURALLOCK SYSTEM
+        </div>
+
+        <a
+            href="#"
+            id="localImageLink"
+            class="poitaButton"
+        >
+            ABRIR IMAGEM
+        </a>
+
+    </div>
+</div>
     </body>
 </html>
