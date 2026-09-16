@@ -295,23 +295,34 @@ const ray2 =
 
 controller2.add(ray2);
 
-            // UI
-makeModeUI();
-
-            
             // Load image
 
 const length = 0.25;
-group = new THREE.Group();
-group.position.set(0, 0, -0.5);
 
-scene.add(group);
+group = new THREE.Group();
+
+group.position.set(
+    0,
+    0,
+    -0.5
+);
+
+scene.add(
+    group
+);
 
 loadTexture(
     group,
     length,
     'Images/discovery.jpg'
 );
+
+
+// UI
+// Criamos a interface depois
+// da estrutura principal da imagem.
+
+makeModeUI();
             // Resize event
 
             window.addEventListener('resize', onWindowResize);
