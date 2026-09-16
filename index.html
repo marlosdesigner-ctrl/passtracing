@@ -238,7 +238,24 @@ controller2.add(ray2);
             // Resize event
 
             window.addEventListener('resize', onWindowResize);
+            
+            
+            const localImageLink =
+    document.getElementById("localImageLink");
 
+const imageFileInput =
+    document.getElementById("imageFileInput");
+
+localImageLink.onclick = function (event) {
+
+    event.preventDefault();
+
+    imageFileInput.click();
+};
+
+imageFileInput.onchange =
+    handleLocalImage;
+            
             // URL Input
 
             const inputLink = document.getElementById("urlInputLink");
@@ -659,6 +676,75 @@ function isPointerOverModePanel(controller) {
             instructionsPlane = textContainer;
         }
 
+        function handleLocalImage(event) {
+
+    const file =
+        event.target.files[0];
+
+    if (file == null) {
+        return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+
+        alert(
+            "O arquivo selecionado não é uma imagem."
+        );
+
+        return;
+    }
+
+    const localImageUrl =
+        URL.createObjectURL(file);
+
+    replaceImage(
+        localImageUrl
+    );
+}
+
+        function replaceImage(url) {
+
+    if (imagePlane != null) {
+
+        group.remove(
+            imagePlane
+        );
+
+        if (imagePlane.geometry) {
+            imagePlane.geometry.dispose();
+        }
+
+        if (imagePlane.material) {
+
+            if (
+                imagePlane.material.uniforms &&
+                imagePlane.material.uniforms.colorTexture
+            ) {
+
+                const oldTexture =
+                    imagePlane.material.uniforms
+                        .colorTexture.value;
+
+                if (oldTexture) {
+                    oldTexture.dispose();
+                }
+            }
+
+            imagePlane.material.dispose();
+        }
+
+        imagePlane = null;
+    }
+
+    const length = 0.25;
+
+    loadTexture(
+        group,
+        length,
+        url
+    );
+}
+            
         function changeImageUrl() {
             const urlInput = document.getElementById("urlInput");
             const url = new URL(window.location);
@@ -682,14 +768,20 @@ function isPointerOverModePanel(controller) {
 
             loader.load(
                 url,
+function (texture) {
 
-                function (texture) {
-                    document.body.appendChild(ARButton.createButton(renderer));
+    if (
+        document.getElementById("ARButton") == null
+    ) {
+        document.body.appendChild(
+            ARButton.createButton(renderer)
+        );
+    }
 
-                    let originalWidth = texture.image.width;
-                    let originalHeight = texture.image.height;
+    let originalWidth = texture.image.width;
+    let originalHeight = texture.image.height;
 
-                    let max = Math.max(originalWidth, originalHeight);
+    let max = Math.max(originalWidth, originalHeight);
                     let width = (originalWidth/max) * length;
                     let height = (originalHeight/max) * length;
 
@@ -1048,11 +1140,17 @@ previousTriggerPressed[i] =
         <a class="github-fork-ribbon" href="https://github.com/fabio914/passtracing" data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
 
         <div id="container"></div>
-
+        <input
+    id="imageFileInput"
+    type="file"
+    accept="image/*"
+    style="display: none;"
+>
         <div class="popupWindow">
             <div class="popupHeader">Passtracing - AR Tracing</div>
             <div class="popupSection">1. Paste an image URL below.<br/>2. Click on "Load image" or "Send link to Meta Quest".<br/>3. Click on the "Start AR" button below to start.</div>
             <div class="popupSection"><div style="margin-right: 8px"><input id="urlInput" type="url" style="width: 100%" placeholder="https://paste.some.website/image/here.jpg"/></div></div>
+           <div class="popupSection"><a href="#"style="color: #EFEFEF"id="localImageLink">ABRIR IMAGEM</a></div>
             <div class="popupSection"><a href="#" style="color: #EFEFEF" id="urlInputLink">Load image</a></div>
             <div class="popupSection"><a href="#" style="color: #EFEFEF" id="urlToQuestLink">Send link to Meta Quest</a></div>
         </div>
