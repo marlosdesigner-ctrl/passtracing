@@ -396,7 +396,7 @@ imageFileInput.onchange =
         }
     };
         }
-
+            
 function makeModeUI() {
 
     const fontFamily =
@@ -410,18 +410,12 @@ function makeModeUI() {
         width: 0.72,
         height: 0.22,
         padding: 0.025,
-
         contentDirection: 'column',
         justifyContent: 'center',
         alignContent: 'center',
-
         borderRadius: 0.025,
-
-        backgroundColor:
-            new THREE.Color(0x20252b),
-
+        backgroundColor: new THREE.Color(0x20252b),
         backgroundOpacity: 0.90,
-
         fontFamily: fontFamily,
         fontTexture: fontTexture
     });
@@ -457,8 +451,7 @@ function makeModeUI() {
         );
 
 
-    menuHitArea.position.z =
-        0.001;
+    menuHitArea.position.z = 0.001;
 
 
     THREE.Object3D.prototype.add.call(
@@ -469,15 +462,9 @@ function makeModeUI() {
 
     const title =
         new ThreeMeshUI.Text({
-            content:
-                "POITA  •  CONTROLE",
-
+            content: "POITA  •  CONTROLE",
             fontSize: 0.032,
-
-            fontColor:
-                new THREE.Color(
-                    0xffffff
-                )
+            fontColor: new THREE.Color(0xffffff)
         });
 
 
@@ -486,11 +473,9 @@ function makeModeUI() {
             width: 0.66,
             height: 0.10,
             margin: 0.015,
-
             contentDirection: 'row',
             justifyContent: 'center',
             alignContent: 'center',
-
             backgroundOpacity: 0
         });
 
@@ -543,50 +528,60 @@ function makeModeUI() {
 
 
     updateModeButtonVisuals();
-            
-           function createModeButton(label, mode) {
-
-    const button = new ThreeMeshUI.Block({
-        width: 0.145,
-        height: 0.075,
-        margin: 0.008,
-
-        justifyContent: 'center',
-        alignContent: 'center',
-
-        borderRadius: 0.015,
-
-        backgroundColor: new THREE.Color(0x404750),
-        backgroundOpacity: 1.0
-    });
+}
 
 
-    const text = new ThreeMeshUI.Text({
-        content: label,
-        fontSize: 0.027,
-        fontColor: new THREE.Color(0xffffff)
-    });
+
+function createModeButton(label, mode) {
+
+    const button =
+        new ThreeMeshUI.Block({
+            width: 0.145,
+            height: 0.075,
+            margin: 0.008,
+            justifyContent: 'center',
+            alignContent: 'center',
+            borderRadius: 0.015,
+            backgroundColor:
+                new THREE.Color(0x404750),
+            backgroundOpacity: 1.0
+        });
+
+
+    const text =
+        new ThreeMeshUI.Text({
+            content: label,
+            fontSize: 0.027,
+            fontColor:
+                new THREE.Color(0xffffff)
+        });
+
 
     button.add(text);
 
 
-    // Área invisível de seleção
-    const hitGeometry = new THREE.PlaneGeometry(
-        0.16,
-        0.09
-    );
+    const hitGeometry =
+        new THREE.PlaneGeometry(
+            0.16,
+            0.09
+        );
 
-    const hitMaterial = new THREE.MeshBasicMaterial({
-        transparent: true,
-        opacity: 0.0,
-        side: THREE.DoubleSide,
-        depthWrite: false
-    });
 
-    const hitArea = new THREE.Mesh(
-        hitGeometry,
-        hitMaterial
-    );
+    const hitMaterial =
+        new THREE.MeshBasicMaterial({
+            transparent: true,
+            opacity: 0.0,
+            side: THREE.DoubleSide,
+            depthWrite: false
+        });
+
+
+    const hitArea =
+        new THREE.Mesh(
+            hitGeometry,
+            hitMaterial
+        );
+
 
     hitArea.position.z = 0.003;
 
@@ -606,8 +601,10 @@ function makeModeUI() {
 
     return button;
 }
-            
-        function updateModeButtonVisuals() {
+
+
+
+function updateModeButtonVisuals() {
 
     for (const buttonInfo of modeButtons) {
 
@@ -631,26 +628,31 @@ function makeModeUI() {
                 backgroundColor:
                     new THREE.Color(0x404750)
             });
-
         }
     }
 }
-            
+
+
+
 function getHoveredModeButton(controller) {
 
     controller.updateMatrixWorld(true);
+
 
     if (modePanel != null) {
         modePanel.updateMatrixWorld(true);
     }
 
+
     uiRayMatrix.identity().extractRotation(
         controller.matrixWorld
     );
 
+
     uiRaycaster.ray.origin.setFromMatrixPosition(
         controller.matrixWorld
     );
+
 
     uiRaycaster.ray.direction
         .set(0, 0, -1)
@@ -666,11 +668,13 @@ function getHoveredModeButton(controller) {
 
         buttonInfo.hitArea.updateMatrixWorld(true);
 
+
         const intersections =
             uiRaycaster.intersectObject(
                 buttonInfo.hitArea,
                 false
             );
+
 
         if (
             intersections.length > 0 &&
@@ -684,6 +688,7 @@ function getHoveredModeButton(controller) {
                 buttonInfo;
         }
     }
+
 
     return closestButton;
 }
@@ -699,22 +704,27 @@ function isPointerOverModePanel(controller) {
         return false;
     }
 
+
     controller.updateMatrixWorld(true);
     modePanel.updateMatrixWorld(true);
     menuHitArea.updateMatrixWorld(true);
+
 
     uiRayMatrix.identity().extractRotation(
         controller.matrixWorld
     );
 
+
     uiRaycaster.ray.origin.setFromMatrixPosition(
         controller.matrixWorld
     );
+
 
     uiRaycaster.ray.direction
         .set(0, 0, -1)
         .applyMatrix4(uiRayMatrix)
         .normalize();
+
 
     const intersections =
         uiRaycaster.intersectObject(
@@ -722,131 +732,170 @@ function isPointerOverModePanel(controller) {
             false
         );
 
+
     return intersections.length > 0;
 }
 
 
+
 function makeInstructionsUI() {
-            const textContainer = new ThreeMeshUI.Block({
-                borderRadius: 0.05,
-                width: 0.45,
-                height: 0.80,
-                padding: 0.05,
-                textAlign: 'left',
-                fontKerning: 'none',
-                whiteSpace: 'pre-wrap',
-                fontFamily: 'https://unpkg.com/three-mesh-ui@6.5.2/examples/assets/Roboto-msdf.json',
-                fontTexture: 'https://unpkg.com/three-mesh-ui@6.5.2/examples/assets/Roboto-msdf.png'
-            });
 
-            textContainer.rotation.y = -45.0 * (Math.PI/180.0);
-            textContainer.position.set(0.5, 0, -0.5);
+    const textContainer =
+        new ThreeMeshUI.Block({
+            borderRadius: 0.05,
+            width: 0.45,
+            height: 0.80,
+            padding: 0.05,
+            textAlign: 'left',
+            fontKerning: 'none',
+            whiteSpace: 'pre-wrap',
 
-            textContainer.add(
-                new ThreeMeshUI.Text({
-                    content: "Controles\n",
-                    fontSize: 0.04,
-                    fontColor: new THREE.Color(0xffff00)
-                }),
+            fontFamily:
+                'https://unpkg.com/three-mesh-ui@6.5.2/examples/assets/Roboto-msdf.json',
 
-                new ThreeMeshUI.Text({
-                    content: "\nAnalogico direita: ",
-                    fontSize: 0.025,
-                    fontColor: new THREE.Color(0xffff00)
-                }),
-
-                new ThreeMeshUI.Text({
-                    content: "Aumentar opacidade",
-                    fontSize: 0.025,
-                    fontColor: new THREE.Color(0xffffff)
-                }),
-
-                new ThreeMeshUI.Text({
-                    content: "\nAnalogico esquerda: ",
-                    fontSize: 0.025,
-                    fontColor: new THREE.Color(0xffff00)
-                }),
-
-                new ThreeMeshUI.Text({
-                    content: "Diminuir opacidade",
-                    fontSize: 0.025,
-                    fontColor: new THREE.Color(0xffffff)
-                }),
-
-                new ThreeMeshUI.Text({
-                    content: "\n\nAnalogico para cima: ",
-                    fontSize: 0.025,
-                    fontColor: new THREE.Color(0xffff00)
-                }),
-
-                new ThreeMeshUI.Text({
-                    content: "Aumentar tamanho",
-                    fontSize: 0.025,
-                    fontColor: new THREE.Color(0xffffff)
-                }),
-
-                new ThreeMeshUI.Text({
-                    content: "\nAnalogico para baixo: ",
-                    fontSize: 0.025,
-                    fontColor: new THREE.Color(0xffff00)
-                }),
-
-                new ThreeMeshUI.Text({
-                    content: "Diminuir tamanho",
-                    fontSize: 0.025,
-                    fontColor: new THREE.Color(0xffffff)
-                }),
+            fontTexture:
+                'https://unpkg.com/three-mesh-ui@6.5.2/examples/assets/Roboto-msdf.png'
+        });
 
 
-                new ThreeMeshUI.Text({
-                    content: "\n\nSegure o gatilho: ",
-                    fontSize: 0.025,
-                    fontColor: new THREE.Color(0xffff00)
-                }),
+    textContainer.rotation.y =
+        -45.0 * (Math.PI / 180.0);
 
-                new ThreeMeshUI.Text({
-                    content: "Reposicionar imagem",
-                    fontSize: 0.025,
-                    fontColor: new THREE.Color(0xffffff)
-                }),
 
-                new ThreeMeshUI.Text({
-                    content: "\n\nA ou X: ",
-                    fontSize: 0.025,
-                    fontColor: new THREE.Color(0xffff00)
-                }),
+    textContainer.position.set(
+        0.5,
+        0,
+        -0.5
+    );
 
-                new ThreeMeshUI.Text({
-                    content: "Mostrar/Ocultar imagem",
-                    fontSize: 0.025,
-                    fontColor: new THREE.Color(0xffffff)
-                }),
 
-                new ThreeMeshUI.Text({
-                    content: "\nB ou Y: ",
-                    fontSize: 0.025,
-                    fontColor: new THREE.Color(0xffff00)
-                }),
+    textContainer.add(
 
-                new ThreeMeshUI.Text({
-                    content: "Mostrar/Ocultar controles",
-                    fontSize: 0.025,
-                    fontColor: new THREE.Color(0xffffff)
-                })
-            );
+        new ThreeMeshUI.Text({
+            content: "Controles\n",
+            fontSize: 0.04,
+            fontColor:
+                new THREE.Color(0xffff00)
+        }),
 
-            scene.add(textContainer);
-            instructionsPlane = textContainer;
-        }
+        new ThreeMeshUI.Text({
+            content: "\nAnalogico direita: ",
+            fontSize: 0.025,
+            fontColor:
+                new THREE.Color(0xffff00)
+        }),
 
-        function handleLocalImage(event) {
+        new ThreeMeshUI.Text({
+            content: "Aumentar opacidade",
+            fontSize: 0.025,
+            fontColor:
+                new THREE.Color(0xffffff)
+        }),
+
+        new ThreeMeshUI.Text({
+            content: "\nAnalogico esquerda: ",
+            fontSize: 0.025,
+            fontColor:
+                new THREE.Color(0xffff00)
+        }),
+
+        new ThreeMeshUI.Text({
+            content: "Diminuir opacidade",
+            fontSize: 0.025,
+            fontColor:
+                new THREE.Color(0xffffff)
+        }),
+
+        new ThreeMeshUI.Text({
+            content: "\n\nAnalogico para cima: ",
+            fontSize: 0.025,
+            fontColor:
+                new THREE.Color(0xffff00)
+        }),
+
+        new ThreeMeshUI.Text({
+            content: "Aumentar tamanho",
+            fontSize: 0.025,
+            fontColor:
+                new THREE.Color(0xffffff)
+        }),
+
+        new ThreeMeshUI.Text({
+            content: "\nAnalogico para baixo: ",
+            fontSize: 0.025,
+            fontColor:
+                new THREE.Color(0xffff00)
+        }),
+
+        new ThreeMeshUI.Text({
+            content: "Diminuir tamanho",
+            fontSize: 0.025,
+            fontColor:
+                new THREE.Color(0xffffff)
+        }),
+
+        new ThreeMeshUI.Text({
+            content: "\n\nSegure o gatilho: ",
+            fontSize: 0.025,
+            fontColor:
+                new THREE.Color(0xffff00)
+        }),
+
+        new ThreeMeshUI.Text({
+            content: "Reposicionar imagem",
+            fontSize: 0.025,
+            fontColor:
+                new THREE.Color(0xffffff)
+        }),
+
+        new ThreeMeshUI.Text({
+            content: "\n\nA ou X: ",
+            fontSize: 0.025,
+            fontColor:
+                new THREE.Color(0xffff00)
+        }),
+
+        new ThreeMeshUI.Text({
+            content: "Mostrar/Ocultar imagem",
+            fontSize: 0.025,
+            fontColor:
+                new THREE.Color(0xffffff)
+        }),
+
+        new ThreeMeshUI.Text({
+            content: "\nB ou Y: ",
+            fontSize: 0.025,
+            fontColor:
+                new THREE.Color(0xffff00)
+        }),
+
+        new ThreeMeshUI.Text({
+            content: "Mostrar/Ocultar controles",
+            fontSize: 0.025,
+            fontColor:
+                new THREE.Color(0xffffff)
+        })
+    );
+
+
+    scene.add(textContainer);
+
+    instructionsPlane =
+        textContainer;
+}
+
+
+
+function handleLocalImage(event) {
 
     const file =
         event.target.files[0];
 
+
     if (file == null) {
         return;
     }
+
 
     if (!file.type.startsWith("image/")) {
 
@@ -857,44 +906,51 @@ function makeInstructionsUI() {
         return;
     }
 
-   const localImageUrl =
-    URL.createObjectURL(file);
 
-const poitaImagePreview =
-    document.getElementById(
-        "poitaImagePreview"
+    const localImageUrl =
+        URL.createObjectURL(file);
+
+
+    const poitaImagePreview =
+        document.getElementById(
+            "poitaImagePreview"
+        );
+
+
+    const poitaImageScreen =
+        document.getElementById(
+            "poitaImageScreen"
+        );
+
+
+    const poitaReadyScreen =
+        document.getElementById(
+            "poitaReadyScreen"
+        );
+
+
+    poitaImagePreview.src =
+        localImageUrl;
+
+
+    replaceImage(
+        localImageUrl
     );
 
-const poitaImageScreen =
-    document.getElementById(
-        "poitaImageScreen"
-    );
 
-const poitaReadyScreen =
-    document.getElementById(
-        "poitaReadyScreen"
+    poitaImageScreen.classList.add(
+        "poitaHidden"
     );
 
 
-poitaImagePreview.src =
-    localImageUrl;
-
-
-replaceImage(
-    localImageUrl
-);
-
-
-poitaImageScreen.classList.add(
-    "poitaHidden"
-);
-
-poitaReadyScreen.classList.remove(
-    "poitaHidden"
-);
+    poitaReadyScreen.classList.remove(
+        "poitaHidden"
+    );
 }
 
-        function replaceImage(url) {
+
+
+function replaceImage(url) {
 
     if (imagePlane != null) {
 
@@ -902,9 +958,12 @@ poitaReadyScreen.classList.remove(
             imagePlane
         );
 
+
         if (imagePlane.geometry) {
+
             imagePlane.geometry.dispose();
         }
+
 
         if (imagePlane.material) {
 
@@ -917,18 +976,24 @@ poitaReadyScreen.classList.remove(
                     imagePlane.material.uniforms
                         .colorTexture.value;
 
+
                 if (oldTexture) {
+
                     oldTexture.dispose();
                 }
             }
 
+
             imagePlane.material.dispose();
         }
+
 
         imagePlane = null;
     }
 
+
     const length = 0.25;
+
 
     loadTexture(
         group,
@@ -936,391 +1001,637 @@ poitaReadyScreen.classList.remove(
         url
     );
 }
-            
-        function changeImageUrl() {
-            const urlInput = document.getElementById("urlInput");
-            const url = new URL(window.location);
-            url.searchParams.set("image", urlInput.value);
-            window.location = url.toString();
-        }
 
-        function sendUrlToQuest() {
-            const urlInput = document.getElementById("urlInput");
-            const url = new URL(window.location);
-            url.searchParams.set("image", urlInput.value);
 
-            let sendToQuestUrl = new URL("https://oculus.com/open_url/");
-            sendToQuestUrl.searchParams.set("url", url);
-            window.location.href = sendToQuestUrl;
-        }
 
-        function loadTexture(container, length, url) {
+function changeImageUrl() {
 
-            const loader = new THREE.TextureLoader();
-
-            loader.load(
-                url,
-function (texture) {
-
-    if (
-        document.getElementById("ARButton") == null
-    ) {
-        document.body.appendChild(
-            ARButton.createButton(renderer)
+    const urlInput =
+        document.getElementById(
+            "urlInput"
         );
-    }
 
-    let originalWidth = texture.image.width;
-    let originalHeight = texture.image.height;
 
-    let max = Math.max(originalWidth, originalHeight);
-                    let width = (originalWidth/max) * length;
-                    let height = (originalHeight/max) * length;
+    const url =
+        new URL(window.location);
 
-                    const geometry = new THREE.PlaneGeometry(width, height);
 
-                    texture.generateMipmaps = false;
+    url.searchParams.set(
+        "image",
+        urlInput.value
+    );
 
-                    const sobelMaterial = new THREE.ShaderMaterial({
-                        transparent: true,
-                        side: THREE.DoubleSide,
-                        uniforms: {
-                            colorTexture: { value: texture },
-                            opacity: { value: currentOpacity }
+
+    window.location =
+        url.toString();
+}
+
+
+
+function sendUrlToQuest() {
+
+    const urlInput =
+        document.getElementById(
+            "urlInput"
+        );
+
+
+    const url =
+        new URL(window.location);
+
+
+    url.searchParams.set(
+        "image",
+        urlInput.value
+    );
+
+
+    let sendToQuestUrl =
+        new URL(
+            "https://oculus.com/open_url/"
+        );
+
+
+    sendToQuestUrl.searchParams.set(
+        "url",
+        url
+    );
+
+
+    window.location.href =
+        sendToQuestUrl;
+}
+
+
+
+function loadTexture(container, length, url) {
+
+    const loader =
+        new THREE.TextureLoader();
+
+
+    loader.load(
+
+        url,
+
+        function (texture) {
+
+            if (
+                document.getElementById(
+                    "ARButton"
+                ) == null
+            ) {
+
+                document.body.appendChild(
+                    ARButton.createButton(
+                        renderer
+                    )
+                );
+            }
+
+
+            let originalWidth =
+                texture.image.width;
+
+            let originalHeight =
+                texture.image.height;
+
+
+            let max =
+                Math.max(
+                    originalWidth,
+                    originalHeight
+                );
+
+
+            let width =
+                (originalWidth / max) *
+                length;
+
+
+            let height =
+                (originalHeight / max) *
+                length;
+
+
+            const geometry =
+                new THREE.PlaneGeometry(
+                    width,
+                    height
+                );
+
+
+            texture.generateMipmaps =
+                false;
+
+
+            const sobelMaterial =
+                new THREE.ShaderMaterial({
+
+                    transparent: true,
+
+                    side:
+                        THREE.DoubleSide,
+
+                    uniforms: {
+
+                        colorTexture: {
+                            value: texture
                         },
-                        vertexShader: document.getElementById('vertexshader').textContent,
-                        fragmentShader: document.getElementById('fragmentshader').textContent
-                    });
 
-                    imagePlane = new THREE.Mesh(geometry, sobelMaterial);
+                        opacity: {
+                            value: currentOpacity
+                        }
+                    },
 
-                    container.add(imagePlane);
-                },
+                    vertexShader:
+                        document.getElementById(
+                            'vertexshader'
+                        ).textContent,
 
-                undefined,
+                    fragmentShader:
+                        document.getElementById(
+                            'fragmentshader'
+                        ).textContent
+                });
 
-                function (err) {
-                    alert("Unable to load image, try a different URL.\n\nCross-Origin Resource Sharing (CORS) policies might prevent the app from loading images from certain websites.");
-                }
+
+            imagePlane =
+                new THREE.Mesh(
+                    geometry,
+                    sobelMaterial
+                );
+
+
+            container.add(
+                imagePlane
+            );
+        },
+
+
+        undefined,
+
+
+        function (err) {
+
+            alert(
+                "Unable to load image, try a different URL.\n\n" +
+                "Cross-Origin Resource Sharing (CORS) policies might " +
+                "prevent the app from loading images from certain websites."
             );
         }
+    );
+}
 
-        function incrementOpacity(delta) {
-            currentOpacity += delta;
-            currentOpacity = Math.min(Math.max(currentOpacity, 0.0), 1.0);
 
-            if (imagePlane != null) {
-                imagePlane.material.uniforms["opacity"].value = currentOpacity;
-            }
-        }
 
-        function incrementScale(delta) {
-    const scaleSpeed = Math.max(currentScale, 1.0);
+function incrementOpacity(delta) {
 
-    currentScale += delta * scaleSpeed;
-    currentScale = Math.min(Math.max(currentScale, 0.0), 40.0);
+    currentOpacity +=
+        delta;
 
-    if (group != null) {
-        group.scale.set(currentScale, currentScale, currentScale);
+
+    currentOpacity =
+        Math.min(
+            Math.max(
+                currentOpacity,
+                0.0
+            ),
+            1.0
+        );
+
+
+    if (imagePlane != null) {
+
+        imagePlane.material
+            .uniforms["opacity"]
+            .value =
+                currentOpacity;
     }
 }
 
-            function moveImage(axis, delta) {
+
+
+function incrementScale(delta) {
+
+    const scaleSpeed =
+        Math.max(
+            currentScale,
+            1.0
+        );
+
+
+    currentScale +=
+        delta *
+        scaleSpeed;
+
+
+    currentScale =
+        Math.min(
+            Math.max(
+                currentScale,
+                0.0
+            ),
+            40.0
+        );
+
+
+    if (group != null) {
+
+        group.scale.set(
+            currentScale,
+            currentScale,
+            currentScale
+        );
+    }
+}
+
+
+
+function moveImage(axis, delta) {
 
     if (group == null) {
         return;
     }
 
-    const moveSpeed = 0.35;
+
+    const moveSpeed =
+        0.35;
+
 
     const distance =
-        delta * moveSpeed;
+        delta *
+        moveSpeed;
 
 
     if (axis === "x") {
 
-        group.translateX(distance);
+        group.translateX(
+            distance
+        );
 
     } else if (axis === "y") {
 
-        group.translateY(distance);
+        group.translateY(
+            distance
+        );
 
     } else if (axis === "z") {
 
-        group.translateZ(distance);
-
+        group.translateZ(
+            distance
+        );
     }
 }
 
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize( window.innerWidth, window.innerHeight );
-        }
 
-        //
 
-        function animate() {
-            renderer.setAnimationLoop(loop);
-        }
+function onWindowResize() {
 
-       function loop() {
+    camera.aspect =
+        window.innerWidth /
+        window.innerHeight;
+
+
+    camera.updateProjectionMatrix();
+
+
+    renderer.setSize(
+        window.innerWidth,
+        window.innerHeight
+    );
+}
+
+
+
+function animate() {
+
+    renderer.setAnimationLoop(
+        loop
+    );
+}
+
+
+
+function loop() {
+
     ThreeMeshUI.update();
 
+
     if (modePanel != null) {
-        modePanel.updateMatrixWorld(true);
+
+        modePanel.updateMatrixWorld(
+            true
+        );
     }
+
 
     updateInput();
 
-    renderer.render(scene, camera);
-}
-            
 
-        function updateInput() {
-            const xrSession = renderer.xr.getSession();
-            const elapsedTime = clock.getDelta();
-
-           let didPressHideImage = false;
-
-            hoveredMode = null;
-
-            if (xrSession == null || xrSession.inputSources.length <= 0) {
-                return;
-            }
-
-            for (let i = 0; i < xrSession.inputSources.length; i++) {
-                const input = xrSession.inputSources[i];
-                const gamepad = input.gamepad; 
-
-                if (
-                    gamepad != null && 
-                    gamepad.mapping == "xr-standard" &&
-                    gamepad.axes.length >= 4
-                ) {
-                    const horizontal = gamepad.axes[2]; // Primary thumbstick X
-                    const vertical = gamepad.axes[3]; // Primary thumbstick Y
-
-                    const triggerButton = gamepad.buttons[0];
-                    const axButton = gamepad.buttons[4];
-                
-
-                   if (currentMode === "scale") {
-
-    // ESCALA
-    // Cima aumenta
-    // Baixo diminui
-
-    if (vertical > 0.7) {
-
-        incrementScale(
-            -1.0 * elapsedTime
-        );
-
-    } else if (vertical < -0.7) {
-
-        incrementScale(
-            1.0 * elapsedTime
-        );
-    }
-
-
-    // OPACIDADE
-    // Direita aumenta
-    // Esquerda diminui
-
-    if (horizontal > 0.7) {
-
-        incrementOpacity(
-            1.0 * elapsedTime
-        );
-
-    } else if (horizontal < -0.7) {
-
-        incrementOpacity(
-            -1.0 * elapsedTime
-        );
-    }
-
-
-
-} else if (currentMode === "x") {
-
-    // MOVIMENTO X
-    // Direita / esquerda
-
-    if (horizontal > 0.25) {
-
-        moveImage(
-            "x",
-            elapsedTime
-        );
-
-    } else if (horizontal < -0.25) {
-
-        moveImage(
-            "x",
-            -elapsedTime
-        );
-    }
-
-
-
-} else if (currentMode === "y") {
-
-    // MOVIMENTO Y
-    // Cima / baixo
-
-    if (vertical < -0.25) {
-
-        moveImage(
-            "y",
-            elapsedTime
-        );
-
-    } else if (vertical > 0.25) {
-
-        moveImage(
-            "y",
-            -elapsedTime
-        );
-    }
-
-
-
-} else if (currentMode === "z") {
-
-    // MOVIMENTO Z
-    // Cima aproxima
-    // Baixo afasta
-
-    if (vertical < -0.25) {
-
-        moveImage(
-            "z",
-            -elapsedTime
-        );
-
-    } else if (vertical > 0.25) {
-
-        moveImage(
-            "z",
-            elapsedTime
-        );
-    }
-}
-                    
-
-                    // FIXME: This index won't match the correct controller
-                    // if a disconnection happens during the session.
-                   const controllerToUse =
-    renderer.xr.getController(i);
-
-
-const hoveredModeButton =
-    getHoveredModeButton(
-        controllerToUse
+    renderer.render(
+        scene,
+        camera
     );
+}
 
 
-const pointerOverModePanel =
-    isPointerOverModePanel(
-        controllerToUse
-    );
+
+function updateInput() {
+
+    const xrSession =
+        renderer.xr.getSession();
 
 
-// HOVER
-// Basta apontar para o botão.
-// Não precisa apertar gatilho.
+    const elapsedTime =
+        clock.getDelta();
 
-if (hoveredModeButton != null) {
+
+    let didPressHideImage =
+        false;
+
 
     hoveredMode =
-        hoveredModeButton.mode;
-}
-
-// Detecta somente o instante inicial
-// do aperto do gatilho.
-
-const triggerJustPressed =
-    triggerButton.pressed &&
-    !previousTriggerPressed[i];
+        null;
 
 
+    if (
+        xrSession == null ||
+        xrSession.inputSources.length <= 0
+    ) {
 
-// CLIQUE EM BOTÃO
-
-if (
-    hoveredModeButton != null &&
-    triggerJustPressed
-) {
-
-    currentMode =
-        hoveredModeButton.mode;
-
-    updateModeButtonVisuals();
-
-    console.log(
-        "POITA modo:",
-        currentMode
-    );
-}
+        return;
+    }
 
 
-// REPOSICIONAMENTO DO MURAL
-//
-// Só pode acontecer quando o ponteiro
-// estiver completamente FORA do painel.
+    for (
+        let i = 0;
+        i < xrSession.inputSources.length;
+        i++
+    ) {
 
-if (
-    !pointerOverModePanel &&
-    triggerButton.pressed
-) {
-    
-
-    const offsetPosition =
-        controllerToUse.localToWorld(
-            new THREE.Vector3(
-                0,
-                0,
-                -0.105
-            )
-        );
+        const input =
+            xrSession.inputSources[i];
 
 
-    group.position.copy(
-        offsetPosition
-    );
+        const gamepad =
+            input.gamepad;
 
 
-    group.setRotationFromQuaternion(
-        controllerToUse.quaternion
-    );
-}
+        if (
+            gamepad != null &&
+            gamepad.mapping == "xr-standard" &&
+            gamepad.axes.length >= 4
+        ) {
+
+            const horizontal =
+                gamepad.axes[2];
 
 
-previousTriggerPressed[i] =
-    triggerButton.pressed;
-                    if (axButton.pressed) {
-                        didPressHideImage = true;
-                    }
+            const vertical =
+                gamepad.axes[3];
+
+
+            const triggerButton =
+                gamepad.buttons[0];
+
+
+            const axButton =
+                gamepad.buttons[4];
+
+
+            if (
+                currentMode === "scale"
+            ) {
+
+                if (
+                    vertical > 0.7
+                ) {
+
+                    incrementScale(
+                        -1.0 *
+                        elapsedTime
+                    );
+
+                } else if (
+                    vertical < -0.7
+                ) {
+
+                    incrementScale(
+                        1.0 *
+                        elapsedTime
+                    );
+                }
+
+
+                if (
+                    horizontal > 0.7
+                ) {
+
+                    incrementOpacity(
+                        1.0 *
+                        elapsedTime
+                    );
+
+                } else if (
+                    horizontal < -0.7
+                ) {
+
+                    incrementOpacity(
+                        -1.0 *
+                        elapsedTime
+                    );
+                }
+
+
+            } else if (
+                currentMode === "x"
+            ) {
+
+                if (
+                    horizontal > 0.25
+                ) {
+
+                    moveImage(
+                        "x",
+                        elapsedTime
+                    );
+
+                } else if (
+                    horizontal < -0.25
+                ) {
+
+                    moveImage(
+                        "x",
+                        -elapsedTime
+                    );
+                }
+
+
+            } else if (
+                currentMode === "y"
+            ) {
+
+                if (
+                    vertical < -0.25
+                ) {
+
+                    moveImage(
+                        "y",
+                        elapsedTime
+                    );
+
+                } else if (
+                    vertical > 0.25
+                ) {
+
+                    moveImage(
+                        "y",
+                        -elapsedTime
+                    );
+                }
+
+
+            } else if (
+                currentMode === "z"
+            ) {
+
+                if (
+                    vertical < -0.25
+                ) {
+
+                    moveImage(
+                        "z",
+                        -elapsedTime
+                    );
+
+                } else if (
+                    vertical > 0.25
+                ) {
+
+                    moveImage(
+                        "z",
+                        elapsedTime
+                    );
                 }
             }
 
-      updateModeButtonVisuals();
-}
+
+            const controllerToUse =
+                renderer.xr.getController(
+                    i
+                );
 
 
-function createModeButton(label, mode) {         
+            const hoveredModeButton =
+                getHoveredModeButton(
+                    controllerToUse
+                );
 
-            const shouldChangeImageVisibility = (!didPressHideImage && previousDidPressHideImage);
-            previousDidPressHideImage = didPressHideImage;
 
-            if (shouldChangeImageVisibility) {
-                imagePlane.visible = !imagePlane.visible;
+            const pointerOverModePanel =
+                isPointerOverModePanel(
+                    controllerToUse
+                );
+
+
+            if (
+                hoveredModeButton != null
+            ) {
+
+                hoveredMode =
+                    hoveredModeButton.mode;
+            }
+
+
+            const triggerJustPressed =
+                triggerButton.pressed &&
+                !previousTriggerPressed[i];
+
+
+            if (
+                hoveredModeButton != null &&
+                triggerJustPressed
+            ) {
+
+                currentMode =
+                    hoveredModeButton.mode;
+
+
+                updateModeButtonVisuals();
+
+
+                console.log(
+                    "POITA modo:",
+                    currentMode
+                );
+            }
+
+
+            if (
+                !pointerOverModePanel &&
+                triggerButton.pressed
+            ) {
+
+                const offsetPosition =
+                    controllerToUse.localToWorld(
+                        new THREE.Vector3(
+                            0,
+                            0,
+                            -0.105
+                        )
+                    );
+
+
+                group.position.copy(
+                    offsetPosition
+                );
+
+
+                group.setRotationFromQuaternion(
+                    controllerToUse.quaternion
+                );
+            }
+
+
+            previousTriggerPressed[i] =
+                triggerButton.pressed;
+
+
+            if (
+                axButton.pressed
+            ) {
+
+                didPressHideImage =
+                    true;
             }
         }
+    }
 
+
+    updateModeButtonVisuals();
+
+
+    const shouldChangeImageVisibility =
+        (
+            !didPressHideImage &&
+            previousDidPressHideImage
+        );
+
+
+    previousDidPressHideImage =
+        didPressHideImage;
+
+
+    if (
+        shouldChangeImageVisibility &&
+        imagePlane != null
+    ) {
+
+        imagePlane.visible =
+            !imagePlane.visible;
+    }
+}
         </script>
 
        
