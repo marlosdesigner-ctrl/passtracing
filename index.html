@@ -214,6 +214,16 @@ let modeButtons = [];
 let menuHitArea = null;
 let hoveredMode = null;
 
+let modeButtonRow = null;
+
+let minimizeButton = null;
+let minimizeHitArea = null;
+
+let expandButton = null;
+let expandHitArea = null;
+
+let modePanelMinimized = false;
+            
 const uiRaycaster = new THREE.Raycaster();
 const uiRayMatrix = new THREE.Matrix4();
 
@@ -286,9 +296,7 @@ const ray2 =
 controller2.add(ray2);
 
             // UI
-
-           makeInstructionsUI();
-            makeModeUI();
+makeModeUI();
 
             
             // Load image
@@ -449,19 +457,101 @@ THREE.Object3D.prototype.add.call(
         fontColor: new THREE.Color(0xffffff)
     });
 
+     minimizeButton = new ThreeMeshUI.Block({
+    width: 0.07,
+    height: 0.055,
 
-    const buttonRow = new ThreeMeshUI.Block({
+    justifyContent: 'center',
+    alignContent: 'center',
+
+    borderRadius: 0.012,
+
+    backgroundColor:
+        new THREE.Color(0x404750),
+
+    backgroundOpacity: 1.0
+});
+
+
+const minimizeText =
+    new ThreeMeshUI.Text({
+        content: "−",
+        fontSize: 0.035,
+        fontColor:
+            new THREE.Color(0xffffff)
+    });
+
+
+minimizeButton.add(
+    minimizeText
+);
+
+
+const minimizeGeometry =
+    new THREE.PlaneGeometry(
+        0.08,
+        0.065
+    );
+
+
+const minimizeMaterial =
+    new THREE.MeshBasicMaterial({
+        transparent: true,
+        opacity: 0.0,
+        side: THREE.DoubleSide,
+        depthWrite: false
+    });
+
+
+minimizeHitArea =
+    new THREE.Mesh(
+        minimizeGeometry,
+        minimizeMaterial
+    );
+
+
+minimizeHitArea.position.z =
+    0.003;
+
+
+THREE.Object3D.prototype.add.call(
+    minimizeButton,
+    minimizeHitArea
+);
+
+const headerRow =
+    new ThreeMeshUI.Block({
         width: 0.66,
-        height: 0.10,
-
-        margin: 0.015,
+        height: 0.06,
 
         contentDirection: 'row',
-        justifyContent: 'center',
-        alignContent: 'center',
+
+        justifyContent:
+            'space-between',
+
+        alignContent:
+            'center',
 
         backgroundOpacity: 0
     });
+
+
+headerRow.add(
+    title,
+    minimizeButton
+);
+     
+   modeButtonRow = new ThreeMeshUI.Block({
+    width: 0.66,
+    height: 0.10,
+    margin: 0.015,
+
+    contentDirection: 'row',
+    justifyContent: 'center',
+    alignContent: 'center',
+
+    backgroundOpacity: 0
+});
 
 
     const scaleButton = createModeButton(
@@ -485,20 +575,98 @@ THREE.Object3D.prototype.add.call(
     );
 
 
-    buttonRow.add(
-        scaleButton,
-        xButton,
-        yButton,
-        zButton
+modeButtonRow.add(
+    scaleButton,
+    xButton,
+    yButton,
+    zButton
+);
+
+
+ modePanel.add(
+    headerRow,
+    modeButtonRow
+);
+
+expandButton =
+    new ThreeMeshUI.Block({
+        width: 0.09,
+        height: 0.07,
+
+        justifyContent: 'center',
+        alignContent: 'center',
+
+        borderRadius: 0.015,
+
+        backgroundColor:
+            new THREE.Color(0x20252b),
+
+        backgroundOpacity: 0.95,
+
+        fontFamily: fontFamily,
+        fontTexture: fontTexture
+    });
+
+
+const expandText =
+    new ThreeMeshUI.Text({
+        content: "+",
+        fontSize: 0.040,
+        fontColor:
+            new THREE.Color(0xffffff)
+    });
+
+
+expandButton.add(
+    expandText
+);
+
+
+expandButton.position.copy(
+    modePanel.position
+);
+
+
+expandButton.visible = false;
+
+
+const expandGeometry =
+    new THREE.PlaneGeometry(
+        0.11,
+        0.09
     );
 
 
-    modePanel.add(
-        title,
-        buttonRow
+const expandMaterial =
+    new THREE.MeshBasicMaterial({
+        transparent: true,
+        opacity: 0.0,
+        side: THREE.DoubleSide,
+        depthWrite: false
+    });
+
+
+expandHitArea =
+    new THREE.Mesh(
+        expandGeometry,
+        expandMaterial
     );
 
 
+expandHitArea.position.z =
+    0.003;
+
+
+THREE.Object3D.prototype.add.call(
+    expandButton,
+    expandHitArea
+);
+
+
+scene.add(
+    expandButton
+);
+     
     scene.add(modePanel);
 
     updateModeButtonVisuals();
@@ -683,6 +851,97 @@ function isPointerOverModePanel(controller) {
 
     return intersections.length > 0;
 }         
+function isPointerOverMinimizeButton(
+    controller
+) {
+
+    if (
+        minimizeHitArea == null ||
+        modePanelMinimized
+    ) {
+        return false;
+    }
+
+
+    controller.updateMatrixWorld(true);
+
+    minimizeHitArea.updateMatrixWorld(true);
+
+
+    uiRayMatrix.identity().extractRotation(
+        controller.matrixWorld
+    );
+
+
+    uiRaycaster.ray.origin
+        .setFromMatrixPosition(
+            controller.matrixWorld
+        );
+
+
+    uiRaycaster.ray.direction
+        .set(0, 0, -1)
+        .applyMatrix4(uiRayMatrix)
+        .normalize();
+
+
+    const intersections =
+        uiRaycaster.intersectObject(
+            minimizeHitArea,
+            false
+        );
+
+
+    return intersections.length > 0;
+}
+
+            function isPointerOverExpandButton(
+    controller
+) {
+
+    if (
+        expandHitArea == null ||
+        !modePanelMinimized
+    ) {
+        return false;
+    }
+
+
+    controller.updateMatrixWorld(true);
+
+    expandButton.updateMatrixWorld(true);
+
+    expandHitArea.updateMatrixWorld(true);
+
+
+    uiRayMatrix.identity().extractRotation(
+        controller.matrixWorld
+    );
+
+
+    uiRaycaster.ray.origin
+        .setFromMatrixPosition(
+            controller.matrixWorld
+        );
+
+
+    uiRaycaster.ray.direction
+        .set(0, 0, -1)
+        .applyMatrix4(uiRayMatrix)
+        .normalize();
+
+
+    const intersections =
+        uiRaycaster.intersectObject(
+            expandHitArea,
+            false
+        );
+
+
+    return intersections.length > 0;
+}
+
+            
             
         function makeInstructionsUI() {
             const textContainer = new ThreeMeshUI.Block({
@@ -1205,6 +1464,42 @@ const triggerJustPressed =
     triggerButton.pressed &&
     !previousTriggerPressed[i];
 
+    const pointerOverMinimize =
+    isPointerOverMinimizeButton(
+        controllerToUse
+    );
+
+
+const pointerOverExpand =
+    isPointerOverExpandButton(
+        controllerToUse
+    );
+
+
+if (
+    pointerOverMinimize &&
+    triggerJustPressed
+) {
+
+    modePanelMinimized = true;
+
+    modePanel.visible = false;
+    expandButton.visible = true;
+}
+
+
+if (
+    pointerOverExpand &&
+    triggerJustPressed
+) {
+
+    modePanelMinimized = false;
+
+    expandButton.visible = false;
+    modePanel.visible = true;
+}
+
+    
 
 // CLIQUE EM BOTÃO
 
@@ -1232,8 +1527,11 @@ if (
 
 if (
     !pointerOverModePanel &&
+    !pointerOverMinimize &&
+    !pointerOverExpand &&
     triggerButton.pressed
 ) {
+    
 
     const offsetPosition =
         controllerToUse.localToWorld(
