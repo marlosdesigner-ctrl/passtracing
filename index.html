@@ -207,6 +207,7 @@
         let previousDidPressHideImage = false;
        
       let currentMode = "scale";
+      let imageFixed = false;
 
 let modePanel = null;
 let modeButtons = [];
@@ -511,11 +512,18 @@ modePanel.scale.set(
             "z"
         );
 
+    const fixButton =
+    createModeButton(
+        "FIXAR",
+        "fix"
+    );
+
 buttonRow.add(
     scaleButton,
     xButton,
     yButton,
-    zButton
+    zButton,
+    fixButton
 );
     
 modePanel.add(
@@ -527,7 +535,55 @@ controller1.add(
     modePanel
 );
 
-updateModeButtonVisuals();
+function updateModeButtonVisuals() {
+
+    for (const buttonInfo of modeButtons) {
+
+        const isFixButton =
+            buttonInfo.mode === "fix";
+
+        const isSelected =
+            buttonInfo.mode === currentMode;
+
+        const isHovered =
+            buttonInfo.mode === hoveredMode;
+
+        if (isFixButton) {
+
+            buttonInfo.text.set({
+                content: imageFixed
+                    ? "DESAFIXAR"
+                    : "FIXAR"
+            });
+
+            buttonInfo.object.set({
+                backgroundColor: new THREE.Color(
+                    imageFixed ? 0x267d59 : 0xff8800
+                ),
+                backgroundOpacity: 1.0
+            });
+
+        } else if (imageFixed) {
+
+            buttonInfo.object.set({
+                backgroundColor:
+                    new THREE.Color(0x404750),
+                backgroundOpacity: 0.25
+            });
+
+        } else {
+
+            buttonInfo.object.set({
+                backgroundColor: new THREE.Color(
+                    isSelected || isHovered
+                        ? 0xff8800
+                        : 0x404750
+                ),
+                backgroundOpacity: 1.0
+            });
+        }
+    }
+}
 }
 
 
@@ -591,11 +647,12 @@ function createModeButton(label, mode) {
     );
 
 
-    modeButtons.push({
-        object: button,
-        hitArea: hitArea,
-        mode: mode
-    });
+ modeButtons.push({
+    object: button,
+    hitArea: hitArea,
+    text: text,
+    mode: mode
+});
 
 
     return button;
@@ -688,7 +745,13 @@ function getHoveredModeButton(controller) {
         }
     }
 
-
+if (
+    imageFixed &&
+    closestButton != null &&
+    closestButton.mode !== "fix"
+) {
+    return null;
+}
     return closestButton;
 }
 
@@ -1199,7 +1262,7 @@ function incrementOpacity(delta) {
             1.0
         );
 
-
+if (imageFixed) return;
     if (imagePlane != null) {
 
         imagePlane.material
@@ -1398,10 +1461,8 @@ function updateInput() {
             const axButton =
                 gamepad.buttons[4];
 
-
-            if (
-                currentMode === "scale"
-            ) {
+            if (!imageFixed) {
+            if (currentMode === "scale") {
 
                 if (
                     vertical > 0.7
@@ -1549,9 +1610,28 @@ function updateInput() {
 
 
             if (
-                hoveredModeButton != null &&
-                triggerJustPressed
-            ) {
+    hoveredModeButton != null &&
+    triggerJustPressed
+) {
+
+    if (hoveredModeButton.mode === "fix") {
+
+        imageFixed = !imageFixed;
+
+        console.log(
+            imageFixed
+                ? "POITA: IMAGEM FIXADA"
+                : "POITA: IMAGEM DESAFIXADA"
+        );
+
+    } else if (!imageFixed) {
+
+        currentMode = hoveredModeButton.mode;
+
+    }
+
+    updateModeButtonVisuals();
+} {
 
                 currentMode =
                     hoveredModeButton.mode;
@@ -1567,10 +1647,10 @@ function updateInput() {
             }
 
 
-            if (
+           if (!imageFixed &&
                 !pointerOverModePanel &&
                 triggerButton.pressed
-            ) {
+) {
 
                 const offsetPosition =
                     controllerToUse.localToWorld(
