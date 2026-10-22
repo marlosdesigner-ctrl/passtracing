@@ -7,25 +7,33 @@
 <title>POITA - Muralock System</title>
 
 <style>
+* {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
-    background: black;
+    background: #000;
     font-family: Arial, sans-serif;
 }
 
 .poitaScreen {
     position: fixed;
     inset: 0;
+    z-index: 10;
     display: flex;
     align-items: center;
     justify-content: center;
     background: #111418;
-    z-index: 10;
+}
+
+.poitaHidden {
+    display: none;
 }
 
 .poitaCard {
     text-align: center;
-    color: #ffffff;
+    color: #fff;
 }
 
 .poitaLogo {
@@ -38,7 +46,7 @@ body {
 .poitaSubtitle {
     font-size: 13px;
     letter-spacing: 5px;
-    opacity: 0.65;
+    opacity: .65;
     margin-bottom: 45px;
 }
 
@@ -46,7 +54,7 @@ body {
     display: inline-block;
     min-width: 180px;
     padding: 14px 28px;
-    border: 1px solid rgba(255,255,255,0.35);
+    border: 1px solid rgba(255,255,255,.35);
     border-radius: 6px;
     color: white;
     text-decoration: none;
@@ -56,18 +64,14 @@ body {
 }
 
 .poitaButton:hover {
-    background: rgba(255,255,255,0.08);
-}
-
-.poitaHidden {
-    display: none;
+    background: rgba(255,255,255,.08);
 }
 
 .poitaPreview {
     width: 260px;
     height: 160px;
     margin: 0 auto 18px;
-    border: 1px solid rgba(255,255,255,0.20);
+    border: 1px solid rgba(255,255,255,.2);
     border-radius: 8px;
     overflow: hidden;
     background: #090b0d;
@@ -83,13 +87,13 @@ body {
     margin-bottom: 28px;
     font-size: 11px;
     letter-spacing: 3px;
-    opacity: 0.55;
+    opacity: .55;
 }
 
 .poitaSecondaryButton {
     display: block;
     margin: 14px auto 0;
-    color: rgba(255,255,255,0.55);
+    color: rgba(255,255,255,.55);
     text-decoration: none;
     font-size: 11px;
     letter-spacing: 2px;
@@ -100,19 +104,22 @@ body {
 
 <body>
 
-<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+<script async
+src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js">
+</script>
 
 <script type="importmap">
 {
     "imports": {
         "three": "https://unpkg.com/three@0.147.0/build/three.module.js",
-        "three/addons/": "https://unpkg.com/three@0.147.0/examples/jsm/",
-        "three-mesh-ui": "https://unpkg.com/three-mesh-ui@6.5.2/build/three-mesh-ui.module.js"
+        "three/addons/": "https://unpkg.com/three@0.147.0/examples/jsm/"
     }
 }
 </script>
 
-<!-- SHADER DE VÉRTICES -->
+<!-- ======================================= -->
+<!-- SHADER DE VÉRTICES                     -->
+<!-- ======================================= -->
 
 <script type="x-shader/x-vertex" id="vertexshader">
 varying vec2 vUv;
@@ -127,13 +134,13 @@ void main() {
 }
 </script>
 
-<!-- SHADER DE FRAGMENTOS -->
+<!-- ======================================= -->
+<!-- SHADER DE FRAGMENTOS                   -->
+<!-- ======================================= -->
 
 <script type="x-shader/x-fragment" id="fragmentshader">
 uniform sampler2D colorTexture;
 uniform float opacity;
-
-float stepSize = 2.0;
 
 varying vec2 vUv;
 
@@ -146,79 +153,90 @@ float intensity(in vec4 color) {
 }
 
 void main() {
-    vec2 uv = vUv;
-
     ivec2 imageSize = textureSize(colorTexture, 0);
 
-    vec2 step = vec2(
-        stepSize / float(imageSize.x),
-        stepSize / float(imageSize.y)
+    vec2 stepSize = vec2(
+        2.0 / float(imageSize.x),
+        2.0 / float(imageSize.y)
     );
 
-    float topLeft = intensity(
-        texture2D(colorTexture, uv + vec2(-step.x, step.y))
-    );
+    float tl = intensity(texture2D(
+        colorTexture,
+        vUv + vec2(-stepSize.x, stepSize.y)
+    ));
 
-    float left = intensity(
-        texture2D(colorTexture, uv + vec2(-step.x, 0.0))
-    );
+    float l = intensity(texture2D(
+        colorTexture,
+        vUv + vec2(-stepSize.x, 0.0)
+    ));
 
-    float bottomLeft = intensity(
-        texture2D(colorTexture, uv + vec2(-step.x, -step.y))
-    );
+    float bl = intensity(texture2D(
+        colorTexture,
+        vUv + vec2(-stepSize.x, -stepSize.y)
+    ));
 
-    float top = intensity(
-        texture2D(colorTexture, uv + vec2(0.0, step.y))
-    );
+    float t = intensity(texture2D(
+        colorTexture,
+        vUv + vec2(0.0, stepSize.y)
+    ));
 
-    float bottom = intensity(
-        texture2D(colorTexture, uv + vec2(0.0, -step.y))
-    );
+    float b = intensity(texture2D(
+        colorTexture,
+        vUv + vec2(0.0, -stepSize.y)
+    ));
 
-    float topRight = intensity(
-        texture2D(colorTexture, uv + vec2(step.x, step.y))
-    );
+    float tr = intensity(texture2D(
+        colorTexture,
+        vUv + vec2(stepSize.x, stepSize.y)
+    ));
 
-    float right = intensity(
-        texture2D(colorTexture, uv + vec2(step.x, 0.0))
-    );
+    float r = intensity(texture2D(
+        colorTexture,
+        vUv + vec2(stepSize.x, 0.0)
+    ));
 
-    float bottomRight = intensity(
-        texture2D(colorTexture, uv + vec2(step.x, -step.y))
-    );
+    float br = intensity(texture2D(
+        colorTexture,
+        vUv + vec2(stepSize.x, -stepSize.y)
+    ));
 
     float horizontal =
-        topLeft + 2.0 * left + bottomLeft -
-        topRight - 2.0 * right - bottomRight;
+        tl + 2.0 * l + bl -
+        tr - 2.0 * r - br;
 
     float vertical =
-        -topLeft - 2.0 * top - topRight +
-        bottomLeft + 2.0 * bottom + bottomRight;
+        -tl - 2.0 * t - tr +
+        bl + 2.0 * b + br;
 
-    float sobelResult = sqrt(
+    float edge = sqrt(
         horizontal * horizontal +
         vertical * vertical
     );
 
-    vec4 sobelColor = vec4(
-        1.0 - sobelResult,
-        1.0 - sobelResult,
-        1.0 - sobelResult,
-        sobelResult
+    vec4 edgeColor = vec4(
+        1.0 - edge,
+        1.0 - edge,
+        1.0 - edge,
+        edge
     );
 
-    vec4 currentColor = texture2D(colorTexture, uv);
+    vec4 original = texture2D(
+        colorTexture,
+        vUv
+    );
 
-    float smoothOpacity = smoothstep(
-        0.0, 0.3, opacity
+    float blend = smoothstep(
+        0.0,
+        0.3,
+        opacity
     );
 
     gl_FragColor = vec4(
-        currentColor.rgb * smoothOpacity +
-        (1.0 - smoothOpacity) * sobelColor.rgb,
+        original.rgb * blend +
+        (1.0 - blend) * edgeColor.rgb,
 
-        currentColor.a * min(opacity, smoothOpacity) +
-        (1.0 - smoothOpacity) * sobelColor.a
+        original.a * min(opacity, blend) +
+        (1.0 - blend) * edgeColor.a
     );
 }
 </script>
@@ -228,17 +246,27 @@ void main() {
 import * as THREE from "three";
 
 import { OrbitControls }
-    from "three/addons/controls/OrbitControls.js";
+from "three/addons/controls/OrbitControls.js";
 
 import { ARButton }
-    from "three/addons/webxr/ARButton.js";
+from "three/addons/webxr/ARButton.js";
 
 // ==========================================
 // POITA - MURALOCK SYSTEM
-// FIXAR / DESAFIXAR V2
+// VERSÃO: FIXAR + ROTAÇÃO XYZ
+//
+// Base:
+// Painel independente em Three.js.
+//
+// Nova função:
+// Rotação nos eixos X, Y e Z.
+//
+// FIXAR/DESAFIXAR preservado.
 // ==========================================
 
+// ==========================================
 // VARIÁVEIS PRINCIPAIS
+// ==========================================
 
 let container;
 let camera;
@@ -256,27 +284,41 @@ let imagePlane = null;
 let currentOpacity = 0.75;
 let currentScale = 1.0;
 
-let previousDidPressHideImage = false;
-
 let currentMode = "scale";
-
-// Esta variável bloqueia SOMENTE
-// as transformações da imagem.
 
 let imageFixed = false;
 
-// INTERFACE INDEPENDENTE
+// ==========================================
+// NOVAS VARIÁVEIS DE ROTAÇÃO
+// ==========================================
+
+let rotationAxis = "x";
+
+// Velocidade em radianos por segundo.
+// Aproximadamente 45,8 graus/segundo.
+
+const rotationSpeed = 0.8;
+
+// ==========================================
+// INTERFACE
+// ==========================================
 
 let modePanel = null;
-let modeButtons = [];
-
 let menuHitArea = null;
+
+const modeButtons = [];
+
 let hoveredMode = null;
 
 const uiRaycaster = new THREE.Raycaster();
 const uiRayMatrix = new THREE.Matrix4();
 
-const previousTriggerPressed = [false, false];
+const previousTriggerPressed = [
+    false,
+    false
+];
+
+let previousDidPressHideImage = false;
 
 // ==========================================
 // INICIALIZAÇÃO
@@ -287,7 +329,9 @@ animate();
 
 function init() {
 
-    container = document.getElementById("container");
+    container = document.getElementById(
+        "container"
+    );
 
     scene = new THREE.Scene();
 
@@ -315,7 +359,9 @@ function init() {
         alpha: true
     });
 
-    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setPixelRatio(
+        window.devicePixelRatio
+    );
 
     renderer.setSize(
         window.innerWidth,
@@ -328,7 +374,9 @@ function init() {
     renderer.xr.enabled = true;
     renderer.xr.setFoveation(0);
 
-    container.appendChild(renderer.domElement);
+    container.appendChild(
+        renderer.domElement
+    );
 
     // ======================================
     // CONTROLADORES
@@ -362,7 +410,9 @@ function init() {
     const ray2 = ray1.clone();
     controller2.add(ray2);
 
-    // Cria o painel independente
+    // ======================================
+    // PAINEL
+    // ======================================
 
     makeModeUI();
 
@@ -372,7 +422,11 @@ function init() {
 
     group = new THREE.Group();
 
-    group.position.set(0, 0, -0.5);
+    group.position.set(
+        0,
+        0,
+        -0.5
+    );
 
     scene.add(group);
 
@@ -387,92 +441,102 @@ function init() {
         onWindowResize
     );
 
-    // ======================================
-    // INTERFACE HTML
-    // ======================================
+    setupHTMLInterface();
+}
 
-    const enterPoitaLink =
-        document.getElementById("enterPoitaLink");
+// ==========================================
+// INTERFACE HTML
+// ==========================================
 
-    const poitaWelcome =
-        document.getElementById("poitaWelcome");
+function setupHTMLInterface() {
 
-    const poitaImageScreen =
-        document.getElementById("poitaImageScreen");
+    const welcome =
+        document.getElementById(
+            "poitaWelcome"
+        );
 
-    const poitaReadyScreen =
-        document.getElementById("poitaReadyScreen");
+    const imageScreen =
+        document.getElementById(
+            "poitaImageScreen"
+        );
 
-    const startPoitaLink =
-        document.getElementById("startPoitaLink");
+    const readyScreen =
+        document.getElementById(
+            "poitaReadyScreen"
+        );
 
-    const localImageLink =
-        document.getElementById("localImageLink");
+    const imageInput =
+        document.getElementById(
+            "imageFileInput"
+        );
 
-    const changePoitaImageLink =
-        document.getElementById("changePoitaImageLink");
-
-    const imageFileInput =
-        document.getElementById("imageFileInput");
-
-    enterPoitaLink.onclick = function(event) {
+    document.getElementById(
+        "enterPoitaLink"
+    ).onclick = function(event) {
 
         event.preventDefault();
 
-        poitaWelcome.classList.add("poitaHidden");
+        welcome.classList.add(
+            "poitaHidden"
+        );
 
-        poitaImageScreen.classList.remove(
+        imageScreen.classList.remove(
             "poitaHidden"
         );
     };
 
-    localImageLink.onclick = function(event) {
+    document.getElementById(
+        "localImageLink"
+    ).onclick = function(event) {
 
         event.preventDefault();
 
-        imageFileInput.value = "";
-        imageFileInput.click();
+        imageInput.value = "";
+        imageInput.click();
     };
 
-    imageFileInput.onchange = handleLocalImage;
-
-    changePoitaImageLink.onclick = function(event) {
+    document.getElementById(
+        "changePoitaImageLink"
+    ).onclick = function(event) {
 
         event.preventDefault();
 
-        imageFileInput.value = "";
-        imageFileInput.click();
+        imageInput.value = "";
+        imageInput.click();
     };
 
-    startPoitaLink.onclick = function(event) {
+    imageInput.onchange = handleLocalImage;
+
+    document.getElementById(
+        "startPoitaLink"
+    ).onclick = function(event) {
 
         event.preventDefault();
 
-        const arButton =
-            document.getElementById("ARButton");
+        const button =
+            document.getElementById(
+                "ARButton"
+            );
 
-        if (arButton) {
+        if (button) {
 
-            poitaReadyScreen.classList.add(
+            readyScreen.classList.add(
                 "poitaHidden"
             );
 
-            arButton.click();
+            button.click();
         }
     };
 }
 
 // ==========================================
-// PAINEL DE CONTROLE INDEPENDENTE
+// PAINEL NATIVO THREE.JS
 // ==========================================
 //
-// Nesta versão, o painel usa apenas
-// objetos nativos do Three.js.
+// Mantemos o sistema que funcionou
+// no Quest 2.
 //
-// Os textos são CanvasTexture.
-//
-// Não existe atualização de layout
-// pelo ThreeMeshUI.
+// Não usamos ThreeMeshUI.
 // ==========================================
 
 function makeModeUI() {
@@ -487,16 +551,15 @@ function makeModeUI() {
 
     modePanel.scale.setScalar(0.27);
 
-    // Painel preso ao controlador 1
-
     controller1.add(modePanel);
 
-    // FUNDO DO PAINEL
+    // Painel ligeiramente maior
+    // para acomodar ROT X.
 
     const background = new THREE.Mesh(
 
         new THREE.PlaneGeometry(
-            0.99,
+            1.22,
             0.22
         ),
 
@@ -514,12 +577,14 @@ function makeModeUI() {
 
     modePanel.add(background);
 
-    // ÁREA DE INTERAÇÃO DO PAINEL
+    // ======================================
+    // ÁREA DE INTERAÇÃO
+    // ======================================
 
     menuHitArea = new THREE.Mesh(
 
         new THREE.PlaneGeometry(
-            1.02,
+            1.25,
             0.25
         ),
 
@@ -536,11 +601,13 @@ function makeModeUI() {
 
     modePanel.add(menuHitArea);
 
+    // ======================================
     // TÍTULO
+    // ======================================
 
     const title = createCanvasLabel(
         "POITA  •  CONTROLE",
-        0.88,
+        1.10,
         0.060,
         34
     );
@@ -553,13 +620,16 @@ function makeModeUI() {
 
     modePanel.add(title);
 
+    // ======================================
     // BOTÕES
+    // ======================================
 
     const specs = [
         ["ESCALA", "scale", 0.155],
         ["X", "x", 0.155],
         ["Y", "y", 0.155],
         ["Z", "z", 0.155],
+        ["ROT X", "rotate", 0.19],
         ["FIXAR", "fix", 0.22]
     ];
 
@@ -597,7 +667,7 @@ function makeModeUI() {
 }
 
 // ==========================================
-// TEXTOS COM CANVAS TEXTURE
+// TEXTOS DO PAINEL
 // ==========================================
 
 function createCanvasLabel(
@@ -615,20 +685,23 @@ function createCanvasLabel(
 
     const ctx = canvas.getContext("2d");
 
-    const texture = new THREE.CanvasTexture(
-        canvas
-    );
+    const texture =
+        new THREE.CanvasTexture(canvas);
 
-    const material = new THREE.MeshBasicMaterial({
-        map: texture,
-        transparent: true,
-        depthTest: false,
-        depthWrite: false,
-        side: THREE.DoubleSide
-    });
+    const material =
+        new THREE.MeshBasicMaterial({
+            map: texture,
+            transparent: true,
+            depthTest: false,
+            depthWrite: false,
+            side: THREE.DoubleSide
+        });
 
     const mesh = new THREE.Mesh(
-        new THREE.PlaneGeometry(width, height),
+        new THREE.PlaneGeometry(
+            width,
+            height
+        ),
         material
     );
 
@@ -641,16 +714,19 @@ function createCanvasLabel(
         fontSize
     };
 
-    drawCanvasLabel(mesh, content);
+    drawCanvasLabel(
+        mesh,
+        content
+    );
 
     return mesh;
 }
 
 function drawCanvasLabel(mesh, value) {
 
-    // Não redesenha se o texto não mudou
-
-    if (mesh.userData.lastLabel === value) {
+    if (
+        mesh.userData.lastLabel === value
+    ) {
         return;
     }
 
@@ -668,11 +744,11 @@ function drawCanvasLabel(mesh, value) {
         canvas.height
     );
 
-    ctx.font = "bold " + fontSize + "px Arial";
+    ctx.font =
+        "bold " + fontSize + "px Arial";
 
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-
     ctx.fillStyle = "#ffffff";
 
     ctx.fillText(
@@ -691,7 +767,11 @@ function drawCanvasLabel(mesh, value) {
 // CRIAÇÃO DOS BOTÕES
 // ==========================================
 
-function createModeButton(label, mode, width) {
+function createModeButton(
+    label,
+    mode,
+    width
+) {
 
     const holder = new THREE.Group();
 
@@ -715,18 +795,20 @@ function createModeButton(label, mode, width) {
 
     holder.add(background);
 
+    const fontSize =
+        mode === "fix" ? 35 :
+        mode === "rotate" ? 38 : 44;
+
     const textMesh = createCanvasLabel(
         label,
         width * 0.96,
         0.064,
-        mode === "fix" ? 37 : 44
+        fontSize
     );
 
     textMesh.position.z = 0.002;
 
     holder.add(textMesh);
-
-    // Área de clique
 
     const hitArea = new THREE.Mesh(
 
@@ -764,33 +846,39 @@ function createModeButton(label, mode, width) {
 // ==========================================
 // ATUALIZAÇÃO VISUAL DOS BOTÕES
 // ==========================================
-//
-// FIXAR:
-//   bloqueia ajustes da imagem.
-//
-// DESAFIXAR:
-//   libera novamente os ajustes.
-//
-// O painel não é bloqueado.
-// ==========================================
 
 function updateModeButtonVisuals() {
 
     for (const info of modeButtons) {
 
-        const isFix = info.mode === "fix";
+        const isFix =
+            info.mode === "fix";
 
-        const label = isFix
-            ? (
-                imageFixed
-                    ? "DESAFIXAR"
-                    : "FIXAR"
-              )
-            : (
-                info.mode === "scale"
-                    ? "ESCALA"
-                    : info.mode.toUpperCase()
-              );
+        let label;
+
+        if (isFix) {
+
+            label = imageFixed
+                ? "DESAFIXAR"
+                : "FIXAR";
+
+        } else if (
+            info.mode === "rotate"
+        ) {
+
+            label =
+                "ROT " + rotationAxis.toUpperCase();
+
+        } else if (
+            info.mode === "scale"
+        ) {
+
+            label = "ESCALA";
+
+        } else {
+
+            label = info.mode.toUpperCase();
+        }
 
         const color = isFix
             ? (
@@ -812,9 +900,9 @@ function updateModeButtonVisuals() {
                 ? 0.25
                 : 1;
 
-        // Atualiza somente quando necessário
-
-        if (info.lastColor !== color) {
+        if (
+            info.lastColor !== color
+        ) {
 
             info.background.material.color.setHex(
                 color
@@ -823,7 +911,9 @@ function updateModeButtonVisuals() {
             info.lastColor = color;
         }
 
-        if (info.lastOpacity !== opacity) {
+        if (
+            info.lastOpacity !== opacity
+        ) {
 
             info.background.material.opacity =
                 opacity;
@@ -842,7 +932,7 @@ function updateModeButtonVisuals() {
 }
 
 // ==========================================
-// DETECÇÃO DE CLIQUE NOS BOTÕES
+// DETECÇÃO DOS BOTÕES
 // ==========================================
 
 function getHoveredModeButton(controller) {
@@ -871,7 +961,9 @@ function getHoveredModeButton(controller) {
 
     for (const buttonInfo of modeButtons) {
 
-        buttonInfo.hitArea.updateMatrixWorld(true);
+        buttonInfo.hitArea.updateMatrixWorld(
+            true
+        );
 
         const intersections =
             uiRaycaster.intersectObject(
@@ -881,7 +973,8 @@ function getHoveredModeButton(controller) {
 
         if (
             intersections.length > 0 &&
-            intersections[0].distance < closestDistance
+            intersections[0].distance <
+                closestDistance
         ) {
 
             closestDistance =
@@ -891,14 +984,15 @@ function getHoveredModeButton(controller) {
         }
     }
 
-    // Com a imagem fixada,
-    // somente DESAFIXAR pode ser acionado.
+    // FIXAR bloqueia os demais botões,
+    // mas mantém DESAFIXAR acessível.
 
     if (
         imageFixed &&
         closestButton &&
         closestButton.mode !== "fix"
     ) {
+
         return null;
     }
 
@@ -907,12 +1001,14 @@ function getHoveredModeButton(controller) {
 
 function isPointerOverModePanel(controller) {
 
-    if (!menuHitArea || !modePanel) {
+    if (
+        !menuHitArea ||
+        !modePanel
+    ) {
         return false;
     }
 
     controller.updateMatrixWorld(true);
-
     modePanel.updateMatrixWorld(true);
     menuHitArea.updateMatrixWorld(true);
 
@@ -939,18 +1035,111 @@ function isPointerOverModePanel(controller) {
 }
 
 // ==========================================
+// NOVA FUNÇÃO: SELECIONAR ROTAÇÃO
+// ==========================================
+//
+// Primeiro clique:
+// ROT X
+//
+// Segundo clique:
+// ROT Y
+//
+// Terceiro clique:
+// ROT Z
+//
+// Quarto clique:
+// ROT X
+// ==========================================
+
+function selectRotationMode() {
+
+    if (imageFixed) {
+        return;
+    }
+
+    if (currentMode !== "rotate") {
+
+        currentMode = "rotate";
+        rotationAxis = "x";
+
+    } else {
+
+        if (rotationAxis === "x") {
+
+            rotationAxis = "y";
+
+        } else if (rotationAxis === "y") {
+
+            rotationAxis = "z";
+
+        } else {
+
+            rotationAxis = "x";
+        }
+    }
+
+    console.log(
+        "POITA: ROT " +
+        rotationAxis.toUpperCase()
+    );
+}
+
+// ==========================================
+// NOVA FUNÇÃO: GIRAR IMAGEM
+// ==========================================
+//
+// A rotação ocorre sobre os eixos
+// locais do grupo da imagem.
+//
+// FIXAR impede qualquer rotação.
+// ==========================================
+
+function rotateImage(delta) {
+
+    if (
+        imageFixed ||
+        !group
+    ) {
+        return;
+    }
+
+    const angle =
+        delta * rotationSpeed;
+
+    if (rotationAxis === "x") {
+
+        group.rotateX(angle);
+
+    } else if (
+        rotationAxis === "y"
+    ) {
+
+        group.rotateY(angle);
+
+    } else if (
+        rotationAxis === "z"
+    ) {
+
+        group.rotateZ(angle);
+    }
+}
+
+// ==========================================
 // ABRIR IMAGEM LOCAL
 // ==========================================
 
 function handleLocalImage(event) {
 
-    const file = event.target.files[0];
+    const file =
+        event.target.files[0];
 
     if (!file) {
         return;
     }
 
-    if (!file.type.startsWith("image/")) {
+    if (
+        !file.type.startsWith("image/")
+    ) {
 
         alert(
             "O arquivo selecionado não é uma imagem."
@@ -959,33 +1148,24 @@ function handleLocalImage(event) {
         return;
     }
 
-    const localImageUrl =
+    const url =
         URL.createObjectURL(file);
 
-    const preview =
-        document.getElementById(
-            "poitaImagePreview"
-        );
+    document.getElementById(
+        "poitaImagePreview"
+    ).src = url;
 
-    const imageScreen =
-        document.getElementById(
-            "poitaImageScreen"
-        );
+    replaceImage(url);
 
-    const readyScreen =
-        document.getElementById(
-            "poitaReadyScreen"
-        );
-
-    preview.src = localImageUrl;
-
-    replaceImage(localImageUrl);
-
-    imageScreen.classList.add(
+    document.getElementById(
+        "poitaImageScreen"
+    ).classList.add(
         "poitaHidden"
     );
 
-    readyScreen.classList.remove(
+    document.getElementById(
+        "poitaReadyScreen"
+    ).classList.remove(
         "poitaHidden"
     );
 }
@@ -1032,12 +1212,13 @@ function replaceImage(url) {
 }
 
 // ==========================================
-// CARREGAMENTO DA TEXTURA
+// CARREGAR TEXTURA
 // ==========================================
 
 function loadTexture(target, length, url) {
 
-    const loader = new THREE.TextureLoader();
+    const loader =
+        new THREE.TextureLoader();
 
     loader.load(
 
@@ -1045,14 +1226,16 @@ function loadTexture(target, length, url) {
 
         function(texture) {
 
-            // Cria botão de entrada no WebXR
-
             if (
-                document.getElementById("ARButton") === null
+                document.getElementById(
+                    "ARButton"
+                ) === null
             ) {
 
                 document.body.appendChild(
-                    ARButton.createButton(renderer)
+                    ARButton.createButton(
+                        renderer
+                    )
                 );
             }
 
@@ -1068,10 +1251,12 @@ function loadTexture(target, length, url) {
             );
 
             const width =
-                (originalWidth / max) * length;
+                (originalWidth / max) *
+                length;
 
             const height =
-                (originalHeight / max) * length;
+                (originalHeight / max) *
+                length;
 
             const geometry =
                 new THREE.PlaneGeometry(
@@ -1081,7 +1266,7 @@ function loadTexture(target, length, url) {
 
             texture.generateMipmaps = false;
 
-            const sobelMaterial =
+            const material =
                 new THREE.ShaderMaterial({
 
                     transparent: true,
@@ -1112,7 +1297,7 @@ function loadTexture(target, length, url) {
 
             imagePlane = new THREE.Mesh(
                 geometry,
-                sobelMaterial
+                material
             );
 
             target.add(imagePlane);
@@ -1153,8 +1338,8 @@ function incrementOpacity(delta) {
 
     if (imagePlane) {
 
-        imagePlane.material
-            .uniforms.opacity.value =
+        imagePlane.material.uniforms
+            .opacity.value =
                 currentOpacity;
     }
 }
@@ -1174,7 +1359,8 @@ function incrementScale(delta) {
         1
     );
 
-    currentScale += delta * scaleSpeed;
+    currentScale +=
+        delta * scaleSpeed;
 
     currentScale = Math.min(
         Math.max(currentScale, 0),
@@ -1192,37 +1378,39 @@ function incrementScale(delta) {
 }
 
 // ==========================================
-// POSICIONAMENTO X / Y / Z
+// MOVIMENTAÇÃO X / Y / Z
 // ==========================================
 
 function moveImage(axis, delta) {
 
-    if (imageFixed || !group) {
+    if (
+        imageFixed ||
+        !group
+    ) {
         return;
     }
 
     const moveSpeed = 0.35;
 
-    const distance = delta * moveSpeed;
+    const distance =
+        delta * moveSpeed;
 
     if (axis === "x") {
 
         group.translateX(distance);
-    }
 
-    else if (axis === "y") {
+    } else if (axis === "y") {
 
         group.translateY(distance);
-    }
 
-    else if (axis === "z") {
+    } else if (axis === "z") {
 
         group.translateZ(distance);
     }
 }
 
 // ==========================================
-// REDIMENSIONAMENTO DA JANELA
+// REDIMENSIONAMENTO
 // ==========================================
 
 function onWindowResize() {
@@ -1240,15 +1428,16 @@ function onWindowResize() {
 }
 
 // ==========================================
-// LOOP PRINCIPAL
+// LOOP PRINCIPAL WEBXR
 // ==========================================
-//
-// IMPORTANTE:
 //
 // FIXAR não interrompe este loop.
 //
-// A atualização dos controladores,
-// do painel e do WebXR permanece ativa.
+// O painel continua acompanhando
+// o controlador.
+//
+// A imagem mantém suas transformações
+// até ser desafixada.
 // ==========================================
 
 function animate() {
@@ -1259,7 +1448,10 @@ function animate() {
 function loop() {
 
     if (modePanel) {
-        modePanel.updateMatrixWorld(true);
+
+        modePanel.updateMatrixWorld(
+            true
+        );
     }
 
     updateInput();
@@ -1271,14 +1463,16 @@ function loop() {
 }
 
 // ==========================================
-// LEITURA DOS CONTROLADORES
+// ENTRADAS DOS CONTROLADORES
 // ==========================================
 
 function updateInput() {
 
-    const session = renderer.xr.getSession();
+    const session =
+        renderer.xr.getSession();
 
-    const dt = clock.getDelta();
+    const dt =
+        Math.min(clock.getDelta(), 0.05);
 
     hoveredMode = null;
 
@@ -1288,11 +1482,17 @@ function updateInput() {
 
     let hideImagePressed = false;
 
-    const sources = session.inputSources;
+    const sources =
+        session.inputSources;
 
-    for (let i = 0; i < sources.length; i++) {
+    for (
+        let i = 0;
+        i < sources.length;
+        i++
+    ) {
 
-        const gamepad = sources[i].gamepad;
+        const gamepad =
+            sources[i].gamepad;
 
         if (
             !gamepad ||
@@ -1304,37 +1504,40 @@ function updateInput() {
         const controller =
             renderer.xr.getController(i);
 
-        const trigger = gamepad.buttons[0];
-        const axButton = gamepad.buttons[4];
+        const trigger =
+            gamepad.buttons[0];
 
-        const triggerPressed = Boolean(
-            trigger && trigger.pressed
-        );
+        const axButton =
+            gamepad.buttons[4];
+
+        const triggerPressed =
+            Boolean(
+                trigger &&
+                trigger.pressed
+            );
 
         const justPressed =
             triggerPressed &&
             !previousTriggerPressed[i];
 
         const overPanel =
-            isPointerOverModePanel(controller);
+            isPointerOverModePanel(
+                controller
+            );
 
         const hoveredButton =
-            getHoveredModeButton(controller);
+            getHoveredModeButton(
+                controller
+            );
 
         if (hoveredButton) {
-            hoveredMode = hoveredButton.mode;
+
+            hoveredMode =
+                hoveredButton.mode;
         }
 
         // ==================================
-        // FIXAR / DESAFIXAR
-        // ==================================
-        //
-        // Esta ação modifica somente
-        // o estado de bloqueio da imagem.
-        //
-        // Não desativa controladores.
-        // Não desativa o painel.
-        // Não interrompe o WebXR.
+        // CLIQUES NA BARRA
         // ==================================
 
         if (
@@ -1342,7 +1545,11 @@ function updateInput() {
             hoveredButton
         ) {
 
-            if (hoveredButton.mode === "fix") {
+            // FIXAR / DESAFIXAR
+
+            if (
+                hoveredButton.mode === "fix"
+            ) {
 
                 imageFixed = !imageFixed;
 
@@ -1351,7 +1558,21 @@ function updateInput() {
                         ? "POITA: IMAGEM FIXADA"
                         : "POITA: IMAGEM DESAFIXADA"
                 );
+
             }
+
+            // ROTAÇÃO X / Y / Z
+
+            else if (
+                !imageFixed &&
+                hoveredButton.mode === "rotate"
+            ) {
+
+                selectRotationMode();
+
+            }
+
+            // ESCALA / X / Y / Z
 
             else if (!imageFixed) {
 
@@ -1380,16 +1601,21 @@ function updateInput() {
             const vertical =
                 gamepad.axes[3];
 
+            // ==============================
             // ESCALA E OPACIDADE
+            // ==============================
 
-            if (currentMode === "scale") {
+            if (
+                currentMode === "scale"
+            ) {
 
                 if (vertical > 0.7) {
 
                     incrementScale(-dt);
-                }
 
-                else if (vertical < -0.7) {
+                } else if (
+                    vertical < -0.7
+                ) {
 
                     incrementScale(dt);
                 }
@@ -1397,56 +1623,99 @@ function updateInput() {
                 if (horizontal > 0.7) {
 
                     incrementOpacity(dt);
-                }
 
-                else if (horizontal < -0.7) {
+                } else if (
+                    horizontal < -0.7
+                ) {
 
                     incrementOpacity(-dt);
                 }
             }
 
-            // EIXO X
+            // ==============================
+            // MOVIMENTAÇÃO X
+            // ==============================
 
-            else if (currentMode === "x") {
+            else if (
+                currentMode === "x"
+            ) {
 
                 if (horizontal > 0.25) {
 
                     moveImage("x", dt);
-                }
 
-                else if (horizontal < -0.25) {
+                } else if (
+                    horizontal < -0.25
+                ) {
 
                     moveImage("x", -dt);
                 }
             }
 
-            // EIXO Y
+            // ==============================
+            // MOVIMENTAÇÃO Y
+            // ==============================
 
-            else if (currentMode === "y") {
+            else if (
+                currentMode === "y"
+            ) {
 
                 if (vertical < -0.25) {
 
                     moveImage("y", dt);
-                }
 
-                else if (vertical > 0.25) {
+                } else if (
+                    vertical > 0.25
+                ) {
 
                     moveImage("y", -dt);
                 }
             }
 
-            // EIXO Z
+            // ==============================
+            // MOVIMENTAÇÃO Z
+            // ==============================
 
-            else if (currentMode === "z") {
+            else if (
+                currentMode === "z"
+            ) {
 
                 if (vertical < -0.25) {
 
                     moveImage("z", -dt);
-                }
 
-                else if (vertical > 0.25) {
+                } else if (
+                    vertical > 0.25
+                ) {
 
                     moveImage("z", dt);
+                }
+            }
+
+            // ==============================
+            // NOVO: ROTAÇÃO XYZ
+            // ==============================
+            //
+            // Analógico horizontal:
+            //
+            // Direita = giro positivo
+            // Esquerda = giro negativo
+            //
+            // O botão ROT seleciona
+            // qual eixo será utilizado.
+            // ==============================
+
+            else if (
+                currentMode === "rotate"
+            ) {
+
+                if (
+                    Math.abs(horizontal) > 0.25
+                ) {
+
+                    rotateImage(
+                        horizontal * dt
+                    );
                 }
             }
         }
@@ -1455,11 +1724,9 @@ function updateInput() {
         // REPOSICIONAMENTO PELO GATILHO
         // ==================================
         //
-        // Somente funciona quando:
+        // Mantido como na versão validada.
         //
-        // 1. A imagem não está fixada.
-        // 2. O controlador não aponta
-        //    para o painel.
+        // Não funciona com FIXAR ativo.
         // ==================================
 
         if (
@@ -1469,7 +1736,9 @@ function updateInput() {
             group
         ) {
 
-            controller.updateMatrixWorld(true);
+            controller.updateMatrixWorld(
+                true
+            );
 
             const offset =
                 controller.localToWorld(
@@ -1480,7 +1749,9 @@ function updateInput() {
                     )
                 );
 
-            group.position.copy(offset);
+            group.position.copy(
+                offset
+            );
 
             const worldQuaternion =
                 new THREE.Quaternion();
@@ -1506,7 +1777,9 @@ function updateInput() {
         }
     }
 
-    // Atualização visual independente
+    // ==================================
+    // ATUALIZAR PAINEL
+    // ==================================
 
     updateModeButtonVisuals();
 
@@ -1530,9 +1803,9 @@ function updateInput() {
 
 </script>
 
-<!-- ====================================== -->
-<!-- CONTAINER WEBGL / WEBXR -->
-<!-- ====================================== -->
+<!-- ======================================= -->
+<!-- CONTAINER THREE.JS                     -->
+<!-- ======================================= -->
 
 <div id="container"></div>
 
@@ -1543,9 +1816,9 @@ function updateInput() {
     style="display:none;"
 >
 
-<!-- ====================================== -->
-<!-- TELA INICIAL -->
-<!-- ====================================== -->
+<!-- ======================================= -->
+<!-- TELA INICIAL                           -->
+<!-- ======================================= -->
 
 <div
     id="poitaWelcome"
@@ -1572,9 +1845,9 @@ function updateInput() {
     </div>
 </div>
 
-<!-- ====================================== -->
-<!-- TELA DE SELEÇÃO DE IMAGEM -->
-<!-- ====================================== -->
+<!-- ======================================= -->
+<!-- TELA ABRIR IMAGEM                      -->
+<!-- ======================================= -->
 
 <div
     id="poitaImageScreen"
@@ -1601,9 +1874,9 @@ function updateInput() {
     </div>
 </div>
 
-<!-- ====================================== -->
-<!-- TELA DE CONFIRMAÇÃO -->
-<!-- ====================================== -->
+<!-- ======================================= -->
+<!-- TELA IMAGEM CARREGADA                  -->
+<!-- ======================================= -->
 
 <div
     id="poitaReadyScreen"
