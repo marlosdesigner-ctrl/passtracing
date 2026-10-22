@@ -2,1926 +2,1202 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>POITA - Muralock System</title>
-
 <style>
-* {
-    box-sizing: border-box;
+*{box-sizing:border-box}
+body{margin:0;background:#000;font-family:Arial,sans-serif}
+.poitaScreen{
+ position:fixed;inset:0;z-index:10;display:flex;
+ align-items:center;justify-content:center;background:#111418
 }
-
-body {
-    margin: 0;
-    background: #000;
-    font-family: Arial, sans-serif;
+.poitaHidden{display:none}
+.poitaCard{text-align:center;color:white;padding:20px}
+.poitaLogo{font-size:52px;font-weight:700;letter-spacing:8px}
+.poitaSubtitle{
+ font-size:13px;letter-spacing:5px;opacity:.65;margin:8px 0 40px
 }
-
-.poitaScreen {
-    position: fixed;
-    inset: 0;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #111418;
+.poitaButton{
+ display:inline-block;min-width:180px;padding:14px 28px;
+ border:1px solid #777;border-radius:6px;color:white;
+ text-decoration:none;font-size:14px;letter-spacing:3px;cursor:pointer
 }
-
-.poitaHidden {
-    display: none;
+.poitaSecondaryButton{
+ display:block;margin:18px auto;color:#aaa;
+ text-decoration:none;font-size:12px;letter-spacing:2px;cursor:pointer
 }
-
-.poitaCard {
-    text-align: center;
-    color: #fff;
+.poitaPreview{
+ width:260px;height:160px;margin:0 auto 18px;
+ border:1px solid #555;border-radius:8px;overflow:hidden
 }
-
-.poitaLogo {
-    font-size: 52px;
-    font-weight: 700;
-    letter-spacing: 8px;
-    margin-bottom: 6px;
-}
-
-.poitaSubtitle {
-    font-size: 13px;
-    letter-spacing: 5px;
-    opacity: .65;
-    margin-bottom: 45px;
-}
-
-.poitaButton {
-    display: inline-block;
-    min-width: 180px;
-    padding: 14px 28px;
-    border: 1px solid rgba(255,255,255,.35);
-    border-radius: 6px;
-    color: white;
-    text-decoration: none;
-    font-size: 14px;
-    letter-spacing: 3px;
-    cursor: pointer;
-}
-
-.poitaButton:hover {
-    background: rgba(255,255,255,.08);
-}
-
-.poitaPreview {
-    width: 260px;
-    height: 160px;
-    margin: 0 auto 18px;
-    border: 1px solid rgba(255,255,255,.2);
-    border-radius: 8px;
-    overflow: hidden;
-    background: #090b0d;
-}
-
-.poitaPreview img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
-.poitaStatus {
-    margin-bottom: 28px;
-    font-size: 11px;
-    letter-spacing: 3px;
-    opacity: .55;
-}
-
-.poitaSecondaryButton {
-    display: block;
-    margin: 14px auto 0;
-    color: rgba(255,255,255,.55);
-    text-decoration: none;
-    font-size: 11px;
-    letter-spacing: 2px;
-    cursor: pointer;
-}
+.poitaPreview img{width:100%;height:100%;object-fit:contain}
+.poitaStatus{font-size:11px;letter-spacing:2px;margin-bottom:25px;color:#aaa}
 </style>
 </head>
-
 <body>
 
-<script async
-src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js">
-</script>
+<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
 
 <script type="importmap">
 {
-    "imports": {
-        "three": "https://unpkg.com/three@0.147.0/build/three.module.js",
-        "three/addons/": "https://unpkg.com/three@0.147.0/examples/jsm/"
-    }
+ "imports":{
+  "three":"https://unpkg.com/three@0.147.0/build/three.module.js",
+  "three/addons/":"https://unpkg.com/three@0.147.0/examples/jsm/"
+ }
 }
 </script>
 
-<!-- ======================================= -->
-<!-- SHADER DE VÉRTICES                     -->
-<!-- ======================================= -->
-
-<script type="x-shader/x-vertex" id="vertexshader">
+<script id="vertexshader" type="x-shader/x-vertex">
 varying vec2 vUv;
-
-void main() {
-    vUv = uv;
-
-    gl_Position =
-        projectionMatrix *
-        modelViewMatrix *
-        vec4(position, 1.0);
+void main(){
+ vUv=uv;
+ gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);
 }
 </script>
 
-<!-- ======================================= -->
-<!-- SHADER DE FRAGMENTOS                   -->
-<!-- ======================================= -->
-
-<script type="x-shader/x-fragment" id="fragmentshader">
+<script id="fragmentshader" type="x-shader/x-fragment">
 uniform sampler2D colorTexture;
 uniform float opacity;
-
 varying vec2 vUv;
 
-float intensity(in vec4 color) {
-    return sqrt(
-        color.x * color.x +
-        color.y * color.y +
-        color.z * color.z
-    );
+float intensity(vec4 c){
+ return sqrt(c.r*c.r+c.g*c.g+c.b*c.b);
 }
 
-void main() {
-    ivec2 imageSize = textureSize(colorTexture, 0);
+void main(){
+ ivec2 sz=textureSize(colorTexture,0);
+ vec2 st=vec2(2.0/float(sz.x),2.0/float(sz.y));
 
-    vec2 stepSize = vec2(
-        2.0 / float(imageSize.x),
-        2.0 / float(imageSize.y)
-    );
+ float tl=intensity(texture2D(colorTexture,vUv+vec2(-st.x,st.y)));
+ float l=intensity(texture2D(colorTexture,vUv+vec2(-st.x,0.0)));
+ float bl=intensity(texture2D(colorTexture,vUv+vec2(-st.x,-st.y)));
+ float t=intensity(texture2D(colorTexture,vUv+vec2(0.0,st.y)));
+ float b=intensity(texture2D(colorTexture,vUv+vec2(0.0,-st.y)));
+ float tr=intensity(texture2D(colorTexture,vUv+vec2(st.x,st.y)));
+ float r=intensity(texture2D(colorTexture,vUv+vec2(st.x,0.0)));
+ float br=intensity(texture2D(colorTexture,vUv+vec2(st.x,-st.y)));
 
-    float tl = intensity(texture2D(
-        colorTexture,
-        vUv + vec2(-stepSize.x, stepSize.y)
-    ));
+ float h=tl+2.0*l+bl-tr-2.0*r-br;
+ float v=-tl-2.0*t-tr+bl+2.0*b+br;
+ float edge=sqrt(h*h+v*v);
 
-    float l = intensity(texture2D(
-        colorTexture,
-        vUv + vec2(-stepSize.x, 0.0)
-    ));
+ vec4 sobel=vec4(vec3(1.0-edge),edge);
+ vec4 original=texture2D(colorTexture,vUv);
+ float blend=smoothstep(0.0,0.3,opacity);
 
-    float bl = intensity(texture2D(
-        colorTexture,
-        vUv + vec2(-stepSize.x, -stepSize.y)
-    ));
-
-    float t = intensity(texture2D(
-        colorTexture,
-        vUv + vec2(0.0, stepSize.y)
-    ));
-
-    float b = intensity(texture2D(
-        colorTexture,
-        vUv + vec2(0.0, -stepSize.y)
-    ));
-
-    float tr = intensity(texture2D(
-        colorTexture,
-        vUv + vec2(stepSize.x, stepSize.y)
-    ));
-
-    float r = intensity(texture2D(
-        colorTexture,
-        vUv + vec2(stepSize.x, 0.0)
-    ));
-
-    float br = intensity(texture2D(
-        colorTexture,
-        vUv + vec2(stepSize.x, -stepSize.y)
-    ));
-
-    float horizontal =
-        tl + 2.0 * l + bl -
-        tr - 2.0 * r - br;
-
-    float vertical =
-        -tl - 2.0 * t - tr +
-        bl + 2.0 * b + br;
-
-    float edge = sqrt(
-        horizontal * horizontal +
-        vertical * vertical
-    );
-
-    vec4 edgeColor = vec4(
-        1.0 - edge,
-        1.0 - edge,
-        1.0 - edge,
-        edge
-    );
-
-    vec4 original = texture2D(
-        colorTexture,
-        vUv
-    );
-
-    float blend = smoothstep(
-        0.0,
-        0.3,
-        opacity
-    );
-
-    gl_FragColor = vec4(
-        original.rgb * blend +
-        (1.0 - blend) * edgeColor.rgb,
-
-        original.a * min(opacity, blend) +
-        (1.0 - blend) * edgeColor.a
-    );
+ gl_FragColor=vec4(
+  original.rgb*blend+(1.0-blend)*sobel.rgb,
+  original.a*min(opacity,blend)+(1.0-blend)*sobel.a
+ );
 }
 </script>
 
 <script type="module">
-
 import * as THREE from "three";
+import {OrbitControls} from "three/addons/controls/OrbitControls.js";
+import {ARButton} from "three/addons/webxr/ARButton.js";
 
-import { OrbitControls }
-from "three/addons/controls/OrbitControls.js";
-
-import { ARButton }
-from "three/addons/webxr/ARButton.js";
-
-// ==========================================
+// ============================================
 // POITA - MURALOCK SYSTEM
-// VERSÃO: FIXAR + ROTAÇÃO XYZ
-//
-// Base:
-// Painel independente em Three.js.
-//
-// Nova função:
-// Rotação nos eixos X, Y e Z.
-//
-// FIXAR/DESAFIXAR preservado.
-// ==========================================
+// ROTAÇÃO XYZ + ANCORAGEM PERSISTENTE
+// ============================================
 
-// ==========================================
-// VARIÁVEIS PRINCIPAIS
-// ==========================================
+let scene,camera,renderer,clock;
+let controller1,controller2;
+let group,imagePlane=null;
+let modePanel,menuHitArea;
 
-let container;
-let camera;
-let scene;
-let renderer;
+let currentOpacity=.75;
+let currentScale=1;
+let currentMode="scale";
+let rotationAxis="x";
+let imageFixed=false;
 
-let controller1;
-let controller2;
+const rotationSpeed=.8;
+const modeButtons=[];
+const raycaster=new THREE.Raycaster();
+const rayMatrix=new THREE.Matrix4();
 
-let clock;
+let hoveredMode=null;
+let previousHide=false;
+const previousTrigger=[false,false];
 
-let group = null;
-let imagePlane = null;
+// ============================================
+// ANCORAGEM ESPACIAL
+// ============================================
 
-let currentOpacity = 0.75;
-let currentScale = 1.0;
+const STORAGE_KEY="poita-anchor-v1";
 
-let currentMode = "scale";
+let activeAnchor=null;
+let anchorCreating=false;
+let anchorPending=false;
+let anchorRestoring=false;
+let anchorPersistent=false;
+let anchorStatus="LIVRE";
+let lastFrame=null;
+let anchorGeneration=0;
 
-let imageFixed = false;
+let savedAnchorData=null;
 
-// ==========================================
-// NOVAS VARIÁVEIS DE ROTAÇÃO
-// ==========================================
+// Matrizes temporárias
+const anchorPosition=new THREE.Vector3();
+const anchorQuaternion=new THREE.Quaternion();
+const anchorScale=new THREE.Vector3(1,1,1);
 
-let rotationAxis = "x";
+function readSavedAnchor(){
+ try{
+  const raw=localStorage.getItem(STORAGE_KEY);
+  return raw?JSON.parse(raw):null;
+ }catch(error){
+  console.warn("POITA: dados salvos indisponíveis",error);
+  return null;
+ }
+}
 
-// Velocidade em radianos por segundo.
-// Aproximadamente 45,8 graus/segundo.
+function storeAnchorData(data){
+ try{
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+  return true;
+ }catch(error){
+  console.warn("POITA: falha ao salvar dados",error);
+  return false;
+ }
+}
 
-const rotationSpeed = 0.8;
+function serializeImage(){
+ return {
+  scale:currentScale,
+  opacity:currentOpacity,
+  visible:imagePlane?imagePlane.visible:true
+ };
+}
 
-// ==========================================
-// INTERFACE
-// ==========================================
+function restoreImageSettings(data){
+ if(!data)return;
 
-let modePanel = null;
-let menuHitArea = null;
+ if(Number.isFinite(data.scale)){
+  currentScale=data.scale;
+  group.scale.setScalar(currentScale);
+ }
 
-const modeButtons = [];
+ if(Number.isFinite(data.opacity)){
+  currentOpacity=data.opacity;
+  if(imagePlane){
+   imagePlane.material.uniforms.opacity.value=currentOpacity;
+  }
+ }
 
-let hoveredMode = null;
+ if(imagePlane && typeof data.visible==="boolean"){
+  imagePlane.visible=data.visible;
+ }
+}
 
-const uiRaycaster = new THREE.Raycaster();
-const uiRayMatrix = new THREE.Matrix4();
+function setAnchorStatus(message){
+ anchorStatus=message;
+ console.log("POITA:",message);
+ updateModeButtonVisuals();
+}
 
-const previousTriggerPressed = [
-    false,
-    false
-];
+// ============================================
+// CRIAR ÂNCORA NA POSIÇÃO ATUAL
+// ============================================
 
-let previousDidPressHideImage = false;
+function requestAnchorCreation(){
+ if(anchorCreating||anchorRestoring||!imageFixed)return;
 
-// ==========================================
+ const session=renderer.xr.getSession();
+ if(!session)return;
+
+ if(typeof XRigidTransform==="undefined"){
+  setAnchorStatus("FIXO - SEM API");
+  return;
+ }
+
+ // A criação precisa acontecer em um XRFrame.
+ anchorPending=true;
+ setAnchorStatus("ANCORANDO...");
+}
+
+function createAnchorInFrame(frame){
+ if(!anchorPending||anchorCreating||!imageFixed)return;
+
+ anchorPending=false;
+
+ const session=renderer.xr.getSession();
+ const referenceSpace=renderer.xr.getReferenceSpace();
+
+ if(
+  !session||
+  !referenceSpace||
+  !frame||
+  typeof frame.createAnchor!=="function"
+ ){
+  setAnchorStatus("FIXO - SEM ÂNCORA");
+  return;
+ }
+
+ anchorCreating=true;
+ const generation=++anchorGeneration;
+
+ // O grupo está diretamente na cena.
+ group.updateMatrixWorld(true);
+
+ const position=group.position;
+ const quaternion=group.quaternion;
+
+ const pose=new XRigidTransform(
+  {
+   x:position.x,
+   y:position.y,
+   z:position.z
+  },
+  {
+   x:quaternion.x,
+   y:quaternion.y,
+   z:quaternion.z,
+   w:quaternion.w
+  }
+ );
+
+ let creation;
+
+ try{
+  creation=frame.createAnchor(pose,referenceSpace);
+ }catch(error){
+  console.error("Erro ao criar âncora",error);
+  anchorCreating=false;
+  setAnchorStatus("FIXO - FALHA ÂNCORA");
+  return;
+ }
+
+ Promise.resolve(creation).then(async anchor=>{
+  if(generation!==anchorGeneration||!imageFixed){
+   try{anchor.delete()}catch(e){}
+   return;
+  }
+
+  activeAnchor=anchor;
+  anchorPersistent=false;
+
+  setAnchorStatus("ÂNCORA ATIVA");
+
+  // Persistência entre sessões
+  if(typeof anchor.requestPersistentHandle==="function"){
+   try{
+    const handle=await anchor.requestPersistentHandle();
+
+    if(generation!==anchorGeneration||!imageFixed)return;
+
+    const previous=readSavedAnchor();
+
+    const data={
+     handle,
+     image:serializeImage(),
+     createdAt:new Date().toISOString()
+    };
+
+    if(storeAnchorData(data)){
+     savedAnchorData=data;
+     anchorPersistent=true;
+     setAnchorStatus("ÂNCORA SALVA");
+
+     // Evita acumular âncoras persistentes.
+     if(
+      previous?.handle&&
+      previous.handle!==handle&&
+      typeof session.deletePersistentAnchor==="function"
+     ){
+      session.deletePersistentAnchor(previous.handle)
+       .catch(error=>console.warn(
+        "Âncora anterior não removida",error
+       ));
+     }
+    }else{
+     setAnchorStatus("ÂNCORA SEM SALVAR");
+    }
+
+   }catch(error){
+    console.warn("Persistência não disponível",error);
+    setAnchorStatus("ÂNCORA TEMPORÁRIA");
+   }
+  }else{
+   setAnchorStatus("ÂNCORA TEMPORÁRIA");
+  }
+
+ }).catch(error=>{
+  console.error("Falha ao criar âncora",error);
+  setAnchorStatus("FIXO - FALHA ÂNCORA");
+ }).finally(()=>{
+  if(generation===anchorGeneration){
+   anchorCreating=false;
+  }
+ });
+}
+
+// ============================================
+// RESTAURAR ÂNCORA DE OUTRA SESSÃO
+// ============================================
+
+async function restorePersistentAnchor(){
+ const session=renderer.xr.getSession();
+ const data=readSavedAnchor();
+
+ if(!session||!data?.handle)return;
+
+ if(typeof session.restorePersistentAnchor!=="function"){
+  setAnchorStatus("RESTAURAÇÃO INDISPONÍVEL");
+  return;
+ }
+
+ anchorRestoring=true;
+ const generation=++anchorGeneration;
+
+ setAnchorStatus("RESTAURANDO...");
+
+ try{
+  const anchor=await session.restorePersistentAnchor(
+   data.handle
+  );
+
+  if(generation!==anchorGeneration){
+   try{anchor.delete()}catch(e){}
+   return;
+  }
+
+  activeAnchor=anchor;
+  anchorPersistent=true;
+  savedAnchorData=data;
+
+  restoreImageSettings(data.image);
+
+  imageFixed=true;
+  setAnchorStatus("ÂNCORA RESTAURADA");
+
+ }catch(error){
+  console.warn("Não foi possível restaurar âncora",error);
+  setAnchorStatus("ÂNCORA NÃO LOCALIZADA");
+ }finally{
+  if(generation===anchorGeneration){
+   anchorRestoring=false;
+  }
+ }
+}
+
+// ============================================
+// ACOMPANHAR ÂNCORA A CADA FRAME
+// ============================================
+
+function updateAnchorPose(frame){
+ if(!imageFixed||!activeAnchor||!frame)return;
+
+ const referenceSpace=renderer.xr.getReferenceSpace();
+ if(!referenceSpace)return;
+
+ let pose=null;
+
+ try{
+  pose=frame.getPose(
+   activeAnchor.anchorSpace,
+   referenceSpace
+  );
+ }catch(error){
+  console.warn("Falha ao consultar âncora",error);
+  return;
+ }
+
+ // Se o rastreamento for perdido, preserva
+ // a última transformação conhecida.
+ if(!pose)return;
+
+ const p=pose.transform.position;
+ const q=pose.transform.orientation;
+
+ anchorPosition.set(p.x,p.y,p.z);
+ anchorQuaternion.set(q.x,q.y,q.z,q.w);
+
+ group.position.copy(anchorPosition);
+ group.quaternion.copy(anchorQuaternion);
+}
+
+// ============================================
+// FIXAR / DESAFIXAR
+// ============================================
+
+function toggleFixation(){
+ if(anchorCreating||anchorRestoring)return;
+
+ if(!imageFixed){
+  imageFixed=true;
+  requestAnchorCreation();
+ }else{
+  imageFixed=false;
+  anchorPending=false;
+  anchorGeneration++;
+
+  // Solta a referência ativa.
+  // A âncora persistente continua armazenada
+  // até a próxima fixação.
+  activeAnchor=null;
+  anchorPersistent=false;
+  anchorCreating=false;
+
+  setAnchorStatus("DESAFIXADO");
+ }
+
+ updateModeButtonVisuals();
+}
+
+// ============================================
 // INICIALIZAÇÃO
-// ==========================================
+// ============================================
 
 init();
 animate();
 
-function init() {
+function init(){
+ scene=new THREE.Scene();
 
-    container = document.getElementById(
-        "container"
-    );
+ camera=new THREE.PerspectiveCamera(
+  50,innerWidth/innerHeight,.1,10
+ );
+ camera.position.set(0,0,1);
 
-    scene = new THREE.Scene();
+ renderer=new THREE.WebGLRenderer({
+  antialias:true,
+  alpha:true
+ });
 
-    camera = new THREE.PerspectiveCamera(
-        50,
-        window.innerWidth / window.innerHeight,
-        0.1,
-        10
-    );
+ renderer.setPixelRatio(devicePixelRatio);
+ renderer.setSize(innerWidth,innerHeight);
+ renderer.outputEncoding=THREE.sRGBEncoding;
+ renderer.xr.enabled=true;
+ renderer.xr.setFoveation(0);
 
-    camera.position.set(0, 0, 1);
+ document.getElementById("container")
+  .appendChild(renderer.domElement);
 
-    const controls = new OrbitControls(
-        camera,
-        container
-    );
+ const orbit=new OrbitControls(
+  camera,renderer.domElement
+ );
+ orbit.minDistance=0;
+ orbit.maxDistance=8;
 
-    controls.minDistance = 0;
-    controls.maxDistance = 8;
+ clock=new THREE.Clock();
 
-    clock = new THREE.Clock();
+ controller1=renderer.xr.getController(0);
+ controller2=renderer.xr.getController(1);
 
-    renderer = new THREE.WebGLRenderer({
-        antialias: true,
-        alpha: true
-    });
+ scene.add(controller1,controller2);
 
-    renderer.setPixelRatio(
-        window.devicePixelRatio
-    );
+ const geometry=new THREE.BufferGeometry()
+  .setFromPoints([
+   new THREE.Vector3(0,0,0),
+   new THREE.Vector3(0,0,-1)
+  ]);
 
-    renderer.setSize(
-        window.innerWidth,
-        window.innerHeight
-    );
+ const material=new THREE.LineBasicMaterial({
+  color:0xffffff
+ });
 
-    renderer.outputEncoding = THREE.sRGBEncoding;
-    renderer.localClippingEnabled = true;
+ for(const controller of [controller1,controller2]){
+  const ray=new THREE.Line(geometry,material);
+  ray.scale.z=3;
+  controller.add(ray);
+ }
 
-    renderer.xr.enabled = true;
-    renderer.xr.setFoveation(0);
+ group=new THREE.Group();
+ group.position.set(0,0,-.5);
+ scene.add(group);
 
-    container.appendChild(
-        renderer.domElement
-    );
+ makeModeUI();
+ setupHTMLInterface();
 
-    // ======================================
-    // CONTROLADORES
-    // ======================================
+ // A solicitação de anchors é opcional:
+ // se não houver suporte, o AR continua.
+ const arButton=ARButton.createButton(renderer,{
+  optionalFeatures:[
+   "anchors",
+   "local-floor",
+   "bounded-floor"
+  ]
+ });
 
-    controller1 = renderer.xr.getController(0);
-    controller2 = renderer.xr.getController(1);
+ document.body.appendChild(arButton);
 
-    scene.add(controller1);
-    scene.add(controller2);
+ renderer.xr.addEventListener("sessionstart",()=>{
+  previousTrigger[0]=false;
+  previousTrigger[1]=false;
+  restorePersistentAnchor();
+ });
 
-    const rayGeometry =
-        new THREE.BufferGeometry().setFromPoints([
-            new THREE.Vector3(0, 0, 0),
-            new THREE.Vector3(0, 0, -1)
-        ]);
+ renderer.xr.addEventListener("sessionend",()=>{
+  activeAnchor=null;
+  anchorPending=false;
+  anchorCreating=false;
+  anchorRestoring=false;
+  anchorGeneration++;
+  imageFixed=false;
+  setAnchorStatus("LIVRE");
+ });
 
-    const rayMaterial =
-        new THREE.LineBasicMaterial({
-            color: 0xffffff
-        });
-
-    const ray1 = new THREE.Line(
-        rayGeometry,
-        rayMaterial
-    );
-
-    ray1.scale.z = 3;
-    controller1.add(ray1);
-
-    const ray2 = ray1.clone();
-    controller2.add(ray2);
-
-    // ======================================
-    // PAINEL
-    // ======================================
-
-    makeModeUI();
-
-    // ======================================
-    // GRUPO DA IMAGEM
-    // ======================================
-
-    group = new THREE.Group();
-
-    group.position.set(
-        0,
-        0,
-        -0.5
-    );
-
-    scene.add(group);
-
-    loadTexture(
-        group,
-        0.25,
-        "Images/discovery.jpg"
-    );
-
-    window.addEventListener(
-        "resize",
-        onWindowResize
-    );
-
-    setupHTMLInterface();
+ addEventListener("resize",()=>{
+  camera.aspect=innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+ });
 }
 
-// ==========================================
+// ============================================
 // INTERFACE HTML
-// ==========================================
+// ============================================
 
-function setupHTMLInterface() {
+function setupHTMLInterface(){
+ const welcome=document.getElementById("poitaWelcome");
+ const imageScreen=document.getElementById("poitaImageScreen");
+ const ready=document.getElementById("poitaReadyScreen");
+ const fileInput=document.getElementById("imageFileInput");
 
-    const welcome =
-        document.getElementById(
-            "poitaWelcome"
-        );
+ document.getElementById("enterPoitaLink").onclick=e=>{
+  e.preventDefault();
+  welcome.classList.add("poitaHidden");
+  imageScreen.classList.remove("poitaHidden");
+ };
 
-    const imageScreen =
-        document.getElementById(
-            "poitaImageScreen"
-        );
+ document.getElementById("localImageLink").onclick=e=>{
+  e.preventDefault();
+  fileInput.value="";
+  fileInput.click();
+ };
 
-    const readyScreen =
-        document.getElementById(
-            "poitaReadyScreen"
-        );
+ document.getElementById("changePoitaImageLink").onclick=e=>{
+  e.preventDefault();
+  fileInput.value="";
+  fileInput.click();
+ };
 
-    const imageInput =
-        document.getElementById(
-            "imageFileInput"
-        );
+ fileInput.onchange=handleLocalImage;
 
-    document.getElementById(
-        "enterPoitaLink"
-    ).onclick = function(event) {
-
-        event.preventDefault();
-
-        welcome.classList.add(
-            "poitaHidden"
-        );
-
-        imageScreen.classList.remove(
-            "poitaHidden"
-        );
-    };
-
-    document.getElementById(
-        "localImageLink"
-    ).onclick = function(event) {
-
-        event.preventDefault();
-
-        imageInput.value = "";
-        imageInput.click();
-    };
-
-    document.getElementById(
-        "changePoitaImageLink"
-    ).onclick = function(event) {
-
-        event.preventDefault();
-
-        imageInput.value = "";
-        imageInput.click();
-    };
-
-    imageInput.onchange = handleLocalImage;
-
-    document.getElementById(
-        "startPoitaLink"
-    ).onclick = function(event) {
-
-        event.preventDefault();
-
-        const button =
-            document.getElementById(
-                "ARButton"
-            );
-
-        if (button) {
-
-            readyScreen.classList.add(
-                "poitaHidden"
-            );
-
-            button.click();
-        }
-    };
+ document.getElementById("startPoitaLink").onclick=e=>{
+  e.preventDefault();
+  const button=document.getElementById("ARButton");
+  if(button){
+   ready.classList.add("poitaHidden");
+   button.click();
+  }
+ };
 }
 
-// ==========================================
+// ============================================
 // PAINEL NATIVO THREE.JS
-// ==========================================
-//
-// Mantemos o sistema que funcionou
-// no Quest 2.
-//
-// Não usamos ThreeMeshUI.
-// ==========================================
+// ============================================
 
-function makeModeUI() {
+function makeModeUI(){
+ modePanel=new THREE.Group();
+ modePanel.position.set(.0405,.027,-.0108);
+ modePanel.scale.setScalar(.27);
+ controller1.add(modePanel);
 
-    modePanel = new THREE.Group();
+ const background=new THREE.Mesh(
+  new THREE.PlaneGeometry(1.22,.22),
+  new THREE.MeshBasicMaterial({
+   color:0x20252b,
+   transparent:true,
+   opacity:.94,
+   side:THREE.DoubleSide,
+   depthTest:false
+  })
+ );
+ background.position.z=-.003;
+ background.renderOrder=100;
+ modePanel.add(background);
 
-    modePanel.position.set(
-        0.0405,
-        0.027,
-        -0.0108
-    );
+ menuHitArea=new THREE.Mesh(
+  new THREE.PlaneGeometry(1.25,.25),
+  new THREE.MeshBasicMaterial({
+   transparent:true,
+   opacity:0,
+   side:THREE.DoubleSide,
+   depthWrite:false,
+   depthTest:false
+  })
+ );
+ menuHitArea.position.z=.001;
+ modePanel.add(menuHitArea);
 
-    modePanel.scale.setScalar(0.27);
+ const title=createCanvasLabel(
+  "POITA • CONTROLE",1.10,.06,34
+ );
+ title.position.set(0,.063,.004);
+ modePanel.add(title);
 
-    controller1.add(modePanel);
+ const specs=[
+  ["ESCALA","scale",.155],
+  ["X","x",.155],
+  ["Y","y",.155],
+  ["Z","z",.155],
+  ["ROT X","rotate",.19],
+  ["FIXAR","fix",.22]
+ ];
 
-    // Painel ligeiramente maior
-    // para acomodar ROT X.
+ const gap=.014;
+ const total=specs.reduce((n,s)=>n+s[2],0)
+  +gap*(specs.length-1);
 
-    const background = new THREE.Mesh(
+ let x=-total/2;
 
-        new THREE.PlaneGeometry(
-            1.22,
-            0.22
-        ),
+ for(const [label,mode,width] of specs){
+  const item=createModeButton(label,mode,width);
+  item.object.position.set(x+width/2,-.035,.006);
+  modePanel.add(item.object);
+  x+=width+gap;
+ }
 
-        new THREE.MeshBasicMaterial({
-            color: 0x20252b,
-            transparent: true,
-            opacity: 0.94,
-            side: THREE.DoubleSide,
-            depthTest: false
-        })
-    );
-
-    background.position.z = -0.003;
-    background.renderOrder = 100;
-
-    modePanel.add(background);
-
-    // ======================================
-    // ÁREA DE INTERAÇÃO
-    // ======================================
-
-    menuHitArea = new THREE.Mesh(
-
-        new THREE.PlaneGeometry(
-            1.25,
-            0.25
-        ),
-
-        new THREE.MeshBasicMaterial({
-            transparent: true,
-            opacity: 0,
-            side: THREE.DoubleSide,
-            depthWrite: false,
-            depthTest: false
-        })
-    );
-
-    menuHitArea.position.z = 0.001;
-
-    modePanel.add(menuHitArea);
-
-    // ======================================
-    // TÍTULO
-    // ======================================
-
-    const title = createCanvasLabel(
-        "POITA  •  CONTROLE",
-        1.10,
-        0.060,
-        34
-    );
-
-    title.position.set(
-        0,
-        0.063,
-        0.004
-    );
-
-    modePanel.add(title);
-
-    // ======================================
-    // BOTÕES
-    // ======================================
-
-    const specs = [
-        ["ESCALA", "scale", 0.155],
-        ["X", "x", 0.155],
-        ["Y", "y", 0.155],
-        ["Z", "z", 0.155],
-        ["ROT X", "rotate", 0.19],
-        ["FIXAR", "fix", 0.22]
-    ];
-
-    const gap = 0.014;
-
-    const total =
-        specs.reduce(
-            (sum, item) => sum + item[2],
-            0
-        ) +
-        gap * (specs.length - 1);
-
-    let x = -total / 2;
-
-    for (const [label, mode, width] of specs) {
-
-        const item = createModeButton(
-            label,
-            mode,
-            width
-        );
-
-        item.object.position.set(
-            x + width / 2,
-            -0.035,
-            0.006
-        );
-
-        modePanel.add(item.object);
-
-        x += width + gap;
-    }
-
-    updateModeButtonVisuals();
+ updateModeButtonVisuals();
 }
 
-// ==========================================
-// TEXTOS DO PAINEL
-// ==========================================
+function createCanvasLabel(content,width,height,fontSize=44){
+ const canvas=document.createElement("canvas");
+ canvas.width=512;
+ canvas.height=128;
 
-function createCanvasLabel(
-    content,
-    width,
-    height,
-    fontSize = 44
-) {
+ const ctx=canvas.getContext("2d");
+ const texture=new THREE.CanvasTexture(canvas);
 
-    const canvas =
-        document.createElement("canvas");
+ const material=new THREE.MeshBasicMaterial({
+  map:texture,
+  transparent:true,
+  depthTest:false,
+  depthWrite:false,
+  side:THREE.DoubleSide
+ });
 
-    canvas.width = 512;
-    canvas.height = 128;
+ const mesh=new THREE.Mesh(
+  new THREE.PlaneGeometry(width,height),
+  material
+ );
 
-    const ctx = canvas.getContext("2d");
-
-    const texture =
-        new THREE.CanvasTexture(canvas);
-
-    const material =
-        new THREE.MeshBasicMaterial({
-            map: texture,
-            transparent: true,
-            depthTest: false,
-            depthWrite: false,
-            side: THREE.DoubleSide
-        });
-
-    const mesh = new THREE.Mesh(
-        new THREE.PlaneGeometry(
-            width,
-            height
-        ),
-        material
-    );
-
-    mesh.renderOrder = 103;
-
-    mesh.userData.label = {
-        canvas,
-        ctx,
-        texture,
-        fontSize
-    };
-
-    drawCanvasLabel(
-        mesh,
-        content
-    );
-
-    return mesh;
+ mesh.renderOrder=103;
+ mesh.userData.label={canvas,ctx,texture,fontSize};
+ drawCanvasLabel(mesh,content);
+ return mesh;
 }
 
-function drawCanvasLabel(mesh, value) {
+function drawCanvasLabel(mesh,value){
+ if(mesh.userData.lastLabel===value)return;
 
-    if (
-        mesh.userData.lastLabel === value
-    ) {
-        return;
-    }
+ const {canvas,ctx,texture,fontSize}=mesh.userData.label;
 
-    const {
-        canvas,
-        ctx,
-        texture,
-        fontSize
-    } = mesh.userData.label;
+ ctx.clearRect(0,0,canvas.width,canvas.height);
+ ctx.font="bold "+fontSize+"px Arial";
+ ctx.textAlign="center";
+ ctx.textBaseline="middle";
+ ctx.fillStyle="#ffffff";
 
-    ctx.clearRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
+ ctx.fillText(
+  value,canvas.width/2,canvas.height/2,canvas.width-16
+ );
 
-    ctx.font =
-        "bold " + fontSize + "px Arial";
-
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = "#ffffff";
-
-    ctx.fillText(
-        value,
-        canvas.width / 2,
-        canvas.height / 2,
-        canvas.width - 16
-    );
-
-    texture.needsUpdate = true;
-
-    mesh.userData.lastLabel = value;
+ texture.needsUpdate=true;
+ mesh.userData.lastLabel=value;
 }
 
-// ==========================================
-// CRIAÇÃO DOS BOTÕES
-// ==========================================
+function createModeButton(label,mode,width){
+ const holder=new THREE.Group();
 
-function createModeButton(
-    label,
-    mode,
-    width
-) {
+ const background=new THREE.Mesh(
+  new THREE.PlaneGeometry(width,.075),
+  new THREE.MeshBasicMaterial({
+   color:0x404750,
+   transparent:true,
+   opacity:1,
+   depthTest:false,
+   side:THREE.DoubleSide
+  })
+ );
+ background.renderOrder=101;
+ holder.add(background);
 
-    const holder = new THREE.Group();
+ const fontSize=mode==="fix"?35:
+  mode==="rotate"?38:44;
 
-    const background = new THREE.Mesh(
+ const textMesh=createCanvasLabel(
+  label,width*.96,.064,fontSize
+ );
+ textMesh.position.z=.002;
+ holder.add(textMesh);
 
-        new THREE.PlaneGeometry(
-            width,
-            0.075
-        ),
+ const hitArea=new THREE.Mesh(
+  new THREE.PlaneGeometry(width+.009,.09),
+  new THREE.MeshBasicMaterial({
+   transparent:true,
+   opacity:0,
+   side:THREE.DoubleSide,
+   depthWrite:false,
+   depthTest:false
+  })
+ );
+ hitArea.position.z=.009;
+ holder.add(hitArea);
 
-        new THREE.MeshBasicMaterial({
-            color: 0x404750,
-            transparent: true,
-            opacity: 1,
-            depthTest: false,
-            side: THREE.DoubleSide
-        })
-    );
+ const item={
+  object:holder,
+  background,
+  textMesh,
+  hitArea,
+  mode
+ };
 
-    background.renderOrder = 101;
-
-    holder.add(background);
-
-    const fontSize =
-        mode === "fix" ? 35 :
-        mode === "rotate" ? 38 : 44;
-
-    const textMesh = createCanvasLabel(
-        label,
-        width * 0.96,
-        0.064,
-        fontSize
-    );
-
-    textMesh.position.z = 0.002;
-
-    holder.add(textMesh);
-
-    const hitArea = new THREE.Mesh(
-
-        new THREE.PlaneGeometry(
-            width + 0.009,
-            0.09
-        ),
-
-        new THREE.MeshBasicMaterial({
-            transparent: true,
-            opacity: 0,
-            side: THREE.DoubleSide,
-            depthWrite: false,
-            depthTest: false
-        })
-    );
-
-    hitArea.position.z = 0.009;
-
-    holder.add(hitArea);
-
-    const item = {
-        object: holder,
-        hitArea,
-        textMesh,
-        background,
-        mode
-    };
-
-    modeButtons.push(item);
-
-    return item;
+ modeButtons.push(item);
+ return item;
 }
 
-// ==========================================
-// ATUALIZAÇÃO VISUAL DOS BOTÕES
-// ==========================================
+function updateModeButtonVisuals(){
+ for(const info of modeButtons){
+  const isFix=info.mode==="fix";
 
-function updateModeButtonVisuals() {
+  let label;
 
-    for (const info of modeButtons) {
+  if(isFix){
+   label=imageFixed?"DESAFIXAR":"FIXAR";
+  }else if(info.mode==="rotate"){
+   label="ROT "+rotationAxis.toUpperCase();
+  }else if(info.mode==="scale"){
+   label="ESCALA";
+  }else{
+   label=info.mode.toUpperCase();
+  }
 
-        const isFix =
-            info.mode === "fix";
+  const color=isFix
+   ?imageFixed?0x267d59:0xff8800
+   :imageFixed?0x404750
+   :(info.mode===currentMode||info.mode===hoveredMode)
+    ?0xff8800:0x404750;
 
-        let label;
+  const opacity=(!isFix&&imageFixed)?.25:1;
 
-        if (isFix) {
+  if(info.lastColor!==color){
+   info.background.material.color.setHex(color);
+   info.lastColor=color;
+  }
 
-            label = imageFixed
-                ? "DESAFIXAR"
-                : "FIXAR";
+  if(info.lastOpacity!==opacity){
+   info.background.material.opacity=opacity;
+   info.textMesh.material.opacity=opacity;
+   info.lastOpacity=opacity;
+  }
 
-        } else if (
-            info.mode === "rotate"
-        ) {
-
-            label =
-                "ROT " + rotationAxis.toUpperCase();
-
-        } else if (
-            info.mode === "scale"
-        ) {
-
-            label = "ESCALA";
-
-        } else {
-
-            label = info.mode.toUpperCase();
-        }
-
-        const color = isFix
-            ? (
-                imageFixed
-                    ? 0x267d59
-                    : 0xff8800
-              )
-            : imageFixed
-                ? 0x404750
-                : (
-                    info.mode === currentMode ||
-                    info.mode === hoveredMode
-                        ? 0xff8800
-                        : 0x404750
-                  );
-
-        const opacity =
-            (!isFix && imageFixed)
-                ? 0.25
-                : 1;
-
-        if (
-            info.lastColor !== color
-        ) {
-
-            info.background.material.color.setHex(
-                color
-            );
-
-            info.lastColor = color;
-        }
-
-        if (
-            info.lastOpacity !== opacity
-        ) {
-
-            info.background.material.opacity =
-                opacity;
-
-            info.textMesh.material.opacity =
-                opacity;
-
-            info.lastOpacity = opacity;
-        }
-
-        drawCanvasLabel(
-            info.textMesh,
-            label
-        );
-    }
+  drawCanvasLabel(info.textMesh,label);
+ }
 }
 
-// ==========================================
-// DETECÇÃO DOS BOTÕES
-// ==========================================
+// ============================================
+// INTERAÇÃO DO PAINEL
+// ============================================
 
-function getHoveredModeButton(controller) {
+function configureRay(controller){
+ controller.updateMatrixWorld(true);
+ modePanel.updateMatrixWorld(true);
 
-    controller.updateMatrixWorld(true);
+ rayMatrix.identity().extractRotation(
+  controller.matrixWorld
+ );
 
-    if (modePanel) {
-        modePanel.updateMatrixWorld(true);
-    }
+ raycaster.ray.origin.setFromMatrixPosition(
+  controller.matrixWorld
+ );
 
-    uiRayMatrix.identity().extractRotation(
-        controller.matrixWorld
-    );
-
-    uiRaycaster.ray.origin.setFromMatrixPosition(
-        controller.matrixWorld
-    );
-
-    uiRaycaster.ray.direction
-        .set(0, 0, -1)
-        .applyMatrix4(uiRayMatrix)
-        .normalize();
-
-    let closestButton = null;
-    let closestDistance = Infinity;
-
-    for (const buttonInfo of modeButtons) {
-
-        buttonInfo.hitArea.updateMatrixWorld(
-            true
-        );
-
-        const intersections =
-            uiRaycaster.intersectObject(
-                buttonInfo.hitArea,
-                false
-            );
-
-        if (
-            intersections.length > 0 &&
-            intersections[0].distance <
-                closestDistance
-        ) {
-
-            closestDistance =
-                intersections[0].distance;
-
-            closestButton = buttonInfo;
-        }
-    }
-
-    // FIXAR bloqueia os demais botões,
-    // mas mantém DESAFIXAR acessível.
-
-    if (
-        imageFixed &&
-        closestButton &&
-        closestButton.mode !== "fix"
-    ) {
-
-        return null;
-    }
-
-    return closestButton;
+ raycaster.ray.direction.set(0,0,-1)
+  .applyMatrix4(rayMatrix).normalize();
 }
 
-function isPointerOverModePanel(controller) {
+function getHoveredModeButton(controller){
+ configureRay(controller);
 
-    if (
-        !menuHitArea ||
-        !modePanel
-    ) {
-        return false;
-    }
+ let closest=null;
+ let distance=Infinity;
 
-    controller.updateMatrixWorld(true);
-    modePanel.updateMatrixWorld(true);
-    menuHitArea.updateMatrixWorld(true);
+ for(const item of modeButtons){
+  item.hitArea.updateMatrixWorld(true);
 
-    uiRayMatrix.identity().extractRotation(
-        controller.matrixWorld
-    );
+  const hits=raycaster.intersectObject(
+   item.hitArea,false
+  );
 
-    uiRaycaster.ray.origin.setFromMatrixPosition(
-        controller.matrixWorld
-    );
+  if(hits.length&&hits[0].distance<distance){
+   distance=hits[0].distance;
+   closest=item;
+  }
+ }
 
-    uiRaycaster.ray.direction
-        .set(0, 0, -1)
-        .applyMatrix4(uiRayMatrix)
-        .normalize();
-
-    const intersections =
-        uiRaycaster.intersectObject(
-            menuHitArea,
-            false
-        );
-
-    return intersections.length > 0;
+ if(imageFixed&&closest?.mode!=="fix")return null;
+ return closest;
 }
 
-// ==========================================
-// NOVA FUNÇÃO: SELECIONAR ROTAÇÃO
-// ==========================================
-//
-// Primeiro clique:
-// ROT X
-//
-// Segundo clique:
-// ROT Y
-//
-// Terceiro clique:
-// ROT Z
-//
-// Quarto clique:
-// ROT X
-// ==========================================
+function isPointerOverModePanel(controller){
+ configureRay(controller);
+ menuHitArea.updateMatrixWorld(true);
 
-function selectRotationMode() {
-
-    if (imageFixed) {
-        return;
-    }
-
-    if (currentMode !== "rotate") {
-
-        currentMode = "rotate";
-        rotationAxis = "x";
-
-    } else {
-
-        if (rotationAxis === "x") {
-
-            rotationAxis = "y";
-
-        } else if (rotationAxis === "y") {
-
-            rotationAxis = "z";
-
-        } else {
-
-            rotationAxis = "x";
-        }
-    }
-
-    console.log(
-        "POITA: ROT " +
-        rotationAxis.toUpperCase()
-    );
+ return raycaster.intersectObject(
+  menuHitArea,false
+ ).length>0;
 }
 
-// ==========================================
-// NOVA FUNÇÃO: GIRAR IMAGEM
-// ==========================================
-//
-// A rotação ocorre sobre os eixos
-// locais do grupo da imagem.
-//
-// FIXAR impede qualquer rotação.
-// ==========================================
+// ============================================
+// SELEÇÃO DE ROTAÇÃO
+// ============================================
 
-function rotateImage(delta) {
+function selectRotationMode(){
+ if(imageFixed)return;
 
-    if (
-        imageFixed ||
-        !group
-    ) {
-        return;
-    }
+ if(currentMode!=="rotate"){
+  currentMode="rotate";
+  rotationAxis="x";
+ }else{
+  rotationAxis=rotationAxis==="x"?"y":
+   rotationAxis==="y"?"z":"x";
+ }
 
-    const angle =
-        delta * rotationSpeed;
-
-    if (rotationAxis === "x") {
-
-        group.rotateX(angle);
-
-    } else if (
-        rotationAxis === "y"
-    ) {
-
-        group.rotateY(angle);
-
-    } else if (
-        rotationAxis === "z"
-    ) {
-
-        group.rotateZ(angle);
-    }
+ console.log("POITA: ROT",rotationAxis);
 }
 
-// ==========================================
-// ABRIR IMAGEM LOCAL
-// ==========================================
+function rotateImage(delta){
+ if(imageFixed||!group)return;
 
-function handleLocalImage(event) {
+ const angle=delta*rotationSpeed;
 
-    const file =
-        event.target.files[0];
-
-    if (!file) {
-        return;
-    }
-
-    if (
-        !file.type.startsWith("image/")
-    ) {
-
-        alert(
-            "O arquivo selecionado não é uma imagem."
-        );
-
-        return;
-    }
-
-    const url =
-        URL.createObjectURL(file);
-
-    document.getElementById(
-        "poitaImagePreview"
-    ).src = url;
-
-    replaceImage(url);
-
-    document.getElementById(
-        "poitaImageScreen"
-    ).classList.add(
-        "poitaHidden"
-    );
-
-    document.getElementById(
-        "poitaReadyScreen"
-    ).classList.remove(
-        "poitaHidden"
-    );
+ if(rotationAxis==="x")group.rotateX(angle);
+ else if(rotationAxis==="y")group.rotateY(angle);
+ else group.rotateZ(angle);
 }
 
-// ==========================================
-// TROCAR IMAGEM
-// ==========================================
+// ============================================
+// CARREGAMENTO DE IMAGENS
+// ============================================
 
-function replaceImage(url) {
+let currentImageUrl=null;
 
-    if (imagePlane) {
+function handleLocalImage(event){
+ const file=event.target.files[0];
+ if(!file)return;
 
-        group.remove(imagePlane);
+ if(!file.type.startsWith("image/")){
+  alert("Selecione uma imagem válida.");
+  return;
+ }
 
-        if (imagePlane.geometry) {
-            imagePlane.geometry.dispose();
-        }
+ const url=URL.createObjectURL(file);
 
-        if (imagePlane.material) {
+ document.getElementById("poitaImagePreview").src=url;
 
-            const uniforms =
-                imagePlane.material.uniforms;
+ replaceImage(url);
 
-            if (
-                uniforms &&
-                uniforms.colorTexture &&
-                uniforms.colorTexture.value
-            ) {
+ document.getElementById("poitaImageScreen")
+  .classList.add("poitaHidden");
 
-                uniforms.colorTexture.value.dispose();
-            }
-
-            imagePlane.material.dispose();
-        }
-
-        imagePlane = null;
-    }
-
-    loadTexture(
-        group,
-        0.25,
-        url
-    );
+ document.getElementById("poitaReadyScreen")
+  .classList.remove("poitaHidden");
 }
 
-// ==========================================
-// CARREGAR TEXTURA
-// ==========================================
+function replaceImage(url){
+ if(imagePlane){
+  group.remove(imagePlane);
+  imagePlane.geometry.dispose();
 
-function loadTexture(target, length, url) {
+  const uniforms=imagePlane.material.uniforms;
 
-    const loader =
-        new THREE.TextureLoader();
+  if(uniforms?.colorTexture?.value){
+   uniforms.colorTexture.value.dispose();
+  }
 
-    loader.load(
+  imagePlane.material.dispose();
+  imagePlane=null;
+ }
 
-        url,
+ if(currentImageUrl?.startsWith("blob:")){
+  URL.revokeObjectURL(currentImageUrl);
+ }
 
-        function(texture) {
-
-            if (
-                document.getElementById(
-                    "ARButton"
-                ) === null
-            ) {
-
-                document.body.appendChild(
-                    ARButton.createButton(
-                        renderer
-                    )
-                );
-            }
-
-            const originalWidth =
-                texture.image.width;
-
-            const originalHeight =
-                texture.image.height;
-
-            const max = Math.max(
-                originalWidth,
-                originalHeight
-            );
-
-            const width =
-                (originalWidth / max) *
-                length;
-
-            const height =
-                (originalHeight / max) *
-                length;
-
-            const geometry =
-                new THREE.PlaneGeometry(
-                    width,
-                    height
-                );
-
-            texture.generateMipmaps = false;
-
-            const material =
-                new THREE.ShaderMaterial({
-
-                    transparent: true,
-
-                    side: THREE.DoubleSide,
-
-                    uniforms: {
-
-                        colorTexture: {
-                            value: texture
-                        },
-
-                        opacity: {
-                            value: currentOpacity
-                        }
-                    },
-
-                    vertexShader:
-                        document.getElementById(
-                            "vertexshader"
-                        ).textContent,
-
-                    fragmentShader:
-                        document.getElementById(
-                            "fragmentshader"
-                        ).textContent
-                });
-
-            imagePlane = new THREE.Mesh(
-                geometry,
-                material
-            );
-
-            target.add(imagePlane);
-        },
-
-        undefined,
-
-        function(error) {
-
-            console.error(
-                "Erro ao carregar imagem:",
-                error
-            );
-
-            alert(
-                "Não foi possível carregar a imagem."
-            );
-        }
-    );
+ currentImageUrl=url;
+ loadTexture(url);
 }
 
-// ==========================================
-// OPACIDADE
-// ==========================================
+function loadTexture(url){
+ new THREE.TextureLoader().load(
+  url,
+  texture=>{
+   const w=texture.image.width;
+   const h=texture.image.height;
+   const max=Math.max(w,h);
 
-function incrementOpacity(delta) {
+   texture.generateMipmaps=false;
 
-    if (imageFixed) {
-        return;
-    }
+   const geometry=new THREE.PlaneGeometry(
+    w/max*.25,
+    h/max*.25
+   );
 
-    currentOpacity += delta;
+   const material=new THREE.ShaderMaterial({
+    transparent:true,
+    side:THREE.DoubleSide,
+    uniforms:{
+     colorTexture:{value:texture},
+     opacity:{value:currentOpacity}
+    },
+    vertexShader:document.getElementById(
+     "vertexshader"
+    ).textContent,
+    fragmentShader:document.getElementById(
+     "fragmentshader"
+    ).textContent
+   });
 
-    currentOpacity = Math.min(
-        Math.max(currentOpacity, 0),
-        1
-    );
+   imagePlane=new THREE.Mesh(geometry,material);
+   group.add(imagePlane);
 
-    if (imagePlane) {
-
-        imagePlane.material.uniforms
-            .opacity.value =
-                currentOpacity;
-    }
+   if(savedAnchorData?.image){
+    restoreImageSettings(savedAnchorData.image);
+   }
+  },
+  undefined,
+  error=>console.error("Erro de textura",error)
+ );
 }
 
-// ==========================================
-// ESCALA
-// ==========================================
+// ============================================
+// CONTROLES DA IMAGEM
+// ============================================
 
-function incrementScale(delta) {
+function incrementOpacity(delta){
+ if(imageFixed)return;
 
-    if (imageFixed) {
-        return;
-    }
+ currentOpacity=THREE.MathUtils.clamp(
+  currentOpacity+delta,0,1
+ );
 
-    const scaleSpeed = Math.max(
-        currentScale,
-        1
-    );
-
-    currentScale +=
-        delta * scaleSpeed;
-
-    currentScale = Math.min(
-        Math.max(currentScale, 0),
-        40
-    );
-
-    if (group) {
-
-        group.scale.set(
-            currentScale,
-            currentScale,
-            currentScale
-        );
-    }
+ if(imagePlane){
+  imagePlane.material.uniforms.opacity.value=
+   currentOpacity;
+ }
 }
 
-// ==========================================
-// MOVIMENTAÇÃO X / Y / Z
-// ==========================================
+function incrementScale(delta){
+ if(imageFixed)return;
 
-function moveImage(axis, delta) {
+ currentScale+=delta*Math.max(currentScale,1);
+ currentScale=THREE.MathUtils.clamp(
+  currentScale,.01,40
+ );
 
-    if (
-        imageFixed ||
-        !group
-    ) {
-        return;
-    }
-
-    const moveSpeed = 0.35;
-
-    const distance =
-        delta * moveSpeed;
-
-    if (axis === "x") {
-
-        group.translateX(distance);
-
-    } else if (axis === "y") {
-
-        group.translateY(distance);
-
-    } else if (axis === "z") {
-
-        group.translateZ(distance);
-    }
+ group.scale.setScalar(currentScale);
 }
 
-// ==========================================
-// REDIMENSIONAMENTO
-// ==========================================
+function moveImage(axis,delta){
+ if(imageFixed)return;
 
-function onWindowResize() {
+ const distance=delta*.35;
 
-    camera.aspect =
-        window.innerWidth /
-        window.innerHeight;
-
-    camera.updateProjectionMatrix();
-
-    renderer.setSize(
-        window.innerWidth,
-        window.innerHeight
-    );
+ if(axis==="x")group.translateX(distance);
+ if(axis==="y")group.translateY(distance);
+ if(axis==="z")group.translateZ(distance);
 }
 
-// ==========================================
-// LOOP PRINCIPAL WEBXR
-// ==========================================
-//
-// FIXAR não interrompe este loop.
-//
-// O painel continua acompanhando
-// o controlador.
-//
-// A imagem mantém suas transformações
-// até ser desafixada.
-// ==========================================
+// ============================================
+// LOOP WEBXR
+// ============================================
 
-function animate() {
-
-    renderer.setAnimationLoop(loop);
+function animate(){
+ renderer.setAnimationLoop(loop);
 }
 
-function loop() {
+function loop(time,frame){
+ // O loop nunca é interrompido pelo FIXAR.
+ if(modePanel){
+  modePanel.updateMatrixWorld(true);
+ }
 
-    if (modePanel) {
+ if(frame){
+  createAnchorInFrame(frame);
+  updateAnchorPose(frame);
+ }
 
-        modePanel.updateMatrixWorld(
-            true
-        );
-    }
+ updateInput();
 
-    updateInput();
-
-    renderer.render(
-        scene,
-        camera
-    );
+ renderer.render(scene,camera);
 }
 
-// ==========================================
-// ENTRADAS DOS CONTROLADORES
-// ==========================================
+// ============================================
+// CONTROLADORES
+// ============================================
 
-function updateInput() {
+function updateInput(){
+ const session=renderer.xr.getSession();
+ const dt=Math.min(clock.getDelta(),.05);
 
-    const session =
-        renderer.xr.getSession();
+ hoveredMode=null;
+ if(!session)return;
 
-    const dt =
-        Math.min(clock.getDelta(), 0.05);
+ let hidePressed=false;
 
-    hoveredMode = null;
+ const sources=session.inputSources;
 
-    if (!session) {
-        return;
+ for(let i=0;i<sources.length;i++){
+  const source=sources[i];
+  const gamepad=source.gamepad;
+
+  if(!gamepad||gamepad.mapping!=="xr-standard"){
+   continue;
+  }
+
+  const controller=renderer.xr.getController(i);
+
+  const trigger=gamepad.buttons[0];
+  const axButton=gamepad.buttons[4];
+
+  const pressed=Boolean(trigger?.pressed);
+  const justPressed=pressed&&!previousTrigger[i];
+
+  const overPanel=isPointerOverModePanel(controller);
+  const hovered=getHoveredModeButton(controller);
+
+  if(hovered){
+   hoveredMode=hovered.mode;
+  }
+
+  // CLIQUES NOS BOTÕES
+  if(justPressed&&hovered){
+
+   if(hovered.mode==="fix"){
+    toggleFixation();
+
+   }else if(!imageFixed&&hovered.mode==="rotate"){
+    selectRotationMode();
+
+   }else if(!imageFixed){
+    currentMode=hovered.mode;
+   }
+  }
+
+  // ANALÓGICOS
+  if(!imageFixed&&gamepad.axes.length>=4){
+   const horizontal=gamepad.axes[2];
+   const vertical=gamepad.axes[3];
+
+   if(currentMode==="scale"){
+    if(vertical>.7)incrementScale(-dt);
+    else if(vertical<-.7)incrementScale(dt);
+
+    if(horizontal>.7)incrementOpacity(dt);
+    else if(horizontal<-.7)incrementOpacity(-dt);
+
+   }else if(currentMode==="x"){
+    if(horizontal>.25)moveImage("x",dt);
+    else if(horizontal<-.25)moveImage("x",-dt);
+
+   }else if(currentMode==="y"){
+    if(vertical<-.25)moveImage("y",dt);
+    else if(vertical>.25)moveImage("y",-dt);
+
+   }else if(currentMode==="z"){
+    if(vertical<-.25)moveImage("z",-dt);
+    else if(vertical>.25)moveImage("z",dt);
+
+   }else if(currentMode==="rotate"){
+    if(Math.abs(horizontal)>.25){
+     rotateImage(horizontal*dt);
     }
+   }
+  }
 
-    let hideImagePressed = false;
+  // REPOSICIONAMENTO PELO GATILHO
+  if(!imageFixed&&!overPanel&&pressed){
+   controller.updateMatrixWorld(true);
 
-    const sources =
-        session.inputSources;
+   const offset=controller.localToWorld(
+    new THREE.Vector3(0,0,-.105)
+   );
 
-    for (
-        let i = 0;
-        i < sources.length;
-        i++
-    ) {
+   group.position.copy(offset);
 
-        const gamepad =
-            sources[i].gamepad;
+   const quaternion=new THREE.Quaternion();
+   controller.getWorldQuaternion(quaternion);
+   group.setRotationFromQuaternion(quaternion);
+  }
 
-        if (
-            !gamepad ||
-            gamepad.mapping !== "xr-standard"
-        ) {
-            continue;
-        }
+  previousTrigger[i]=pressed;
 
-        const controller =
-            renderer.xr.getController(i);
+  if(axButton?.pressed){
+   hidePressed=true;
+  }
+ }
 
-        const trigger =
-            gamepad.buttons[0];
+ updateModeButtonVisuals();
 
-        const axButton =
-            gamepad.buttons[4];
+ // A/X - VISIBILIDADE DA IMAGEM
+ if(!hidePressed&&previousHide&&imagePlane){
+  imagePlane.visible=!imagePlane.visible;
+ }
 
-        const triggerPressed =
-            Boolean(
-                trigger &&
-                trigger.pressed
-            );
-
-        const justPressed =
-            triggerPressed &&
-            !previousTriggerPressed[i];
-
-        const overPanel =
-            isPointerOverModePanel(
-                controller
-            );
-
-        const hoveredButton =
-            getHoveredModeButton(
-                controller
-            );
-
-        if (hoveredButton) {
-
-            hoveredMode =
-                hoveredButton.mode;
-        }
-
-        // ==================================
-        // CLIQUES NA BARRA
-        // ==================================
-
-        if (
-            justPressed &&
-            hoveredButton
-        ) {
-
-            // FIXAR / DESAFIXAR
-
-            if (
-                hoveredButton.mode === "fix"
-            ) {
-
-                imageFixed = !imageFixed;
-
-                console.log(
-                    imageFixed
-                        ? "POITA: IMAGEM FIXADA"
-                        : "POITA: IMAGEM DESAFIXADA"
-                );
-
-            }
-
-            // ROTAÇÃO X / Y / Z
-
-            else if (
-                !imageFixed &&
-                hoveredButton.mode === "rotate"
-            ) {
-
-                selectRotationMode();
-
-            }
-
-            // ESCALA / X / Y / Z
-
-            else if (!imageFixed) {
-
-                currentMode =
-                    hoveredButton.mode;
-
-                console.log(
-                    "POITA modo:",
-                    currentMode
-                );
-            }
-        }
-
-        // ==================================
-        // CONTROLES ANALÓGICOS
-        // ==================================
-
-        if (
-            !imageFixed &&
-            gamepad.axes.length >= 4
-        ) {
-
-            const horizontal =
-                gamepad.axes[2];
-
-            const vertical =
-                gamepad.axes[3];
-
-            // ==============================
-            // ESCALA E OPACIDADE
-            // ==============================
-
-            if (
-                currentMode === "scale"
-            ) {
-
-                if (vertical > 0.7) {
-
-                    incrementScale(-dt);
-
-                } else if (
-                    vertical < -0.7
-                ) {
-
-                    incrementScale(dt);
-                }
-
-                if (horizontal > 0.7) {
-
-                    incrementOpacity(dt);
-
-                } else if (
-                    horizontal < -0.7
-                ) {
-
-                    incrementOpacity(-dt);
-                }
-            }
-
-            // ==============================
-            // MOVIMENTAÇÃO X
-            // ==============================
-
-            else if (
-                currentMode === "x"
-            ) {
-
-                if (horizontal > 0.25) {
-
-                    moveImage("x", dt);
-
-                } else if (
-                    horizontal < -0.25
-                ) {
-
-                    moveImage("x", -dt);
-                }
-            }
-
-            // ==============================
-            // MOVIMENTAÇÃO Y
-            // ==============================
-
-            else if (
-                currentMode === "y"
-            ) {
-
-                if (vertical < -0.25) {
-
-                    moveImage("y", dt);
-
-                } else if (
-                    vertical > 0.25
-                ) {
-
-                    moveImage("y", -dt);
-                }
-            }
-
-            // ==============================
-            // MOVIMENTAÇÃO Z
-            // ==============================
-
-            else if (
-                currentMode === "z"
-            ) {
-
-                if (vertical < -0.25) {
-
-                    moveImage("z", -dt);
-
-                } else if (
-                    vertical > 0.25
-                ) {
-
-                    moveImage("z", dt);
-                }
-            }
-
-            // ==============================
-            // NOVO: ROTAÇÃO XYZ
-            // ==============================
-            //
-            // Analógico horizontal:
-            //
-            // Direita = giro positivo
-            // Esquerda = giro negativo
-            //
-            // O botão ROT seleciona
-            // qual eixo será utilizado.
-            // ==============================
-
-            else if (
-                currentMode === "rotate"
-            ) {
-
-                if (
-                    Math.abs(horizontal) > 0.25
-                ) {
-
-                    rotateImage(
-                        horizontal * dt
-                    );
-                }
-            }
-        }
-
-        // ==================================
-        // REPOSICIONAMENTO PELO GATILHO
-        // ==================================
-        //
-        // Mantido como na versão validada.
-        //
-        // Não funciona com FIXAR ativo.
-        // ==================================
-
-        if (
-            !imageFixed &&
-            !overPanel &&
-            triggerPressed &&
-            group
-        ) {
-
-            controller.updateMatrixWorld(
-                true
-            );
-
-            const offset =
-                controller.localToWorld(
-                    new THREE.Vector3(
-                        0,
-                        0,
-                        -0.105
-                    )
-                );
-
-            group.position.copy(
-                offset
-            );
-
-            const worldQuaternion =
-                new THREE.Quaternion();
-
-            controller.getWorldQuaternion(
-                worldQuaternion
-            );
-
-            group.setRotationFromQuaternion(
-                worldQuaternion
-            );
-        }
-
-        previousTriggerPressed[i] =
-            triggerPressed;
-
-        if (
-            axButton &&
-            axButton.pressed
-        ) {
-
-            hideImagePressed = true;
-        }
-    }
-
-    // ==================================
-    // ATUALIZAR PAINEL
-    // ==================================
-
-    updateModeButtonVisuals();
-
-    // ==================================
-    // MOSTRAR / OCULTAR IMAGEM
-    // ==================================
-
-    if (
-        !hideImagePressed &&
-        previousDidPressHideImage &&
-        imagePlane
-    ) {
-
-        imagePlane.visible =
-            !imagePlane.visible;
-    }
-
-    previousDidPressHideImage =
-        hideImagePressed;
+ previousHide=hidePressed;
 }
 
 </script>
 
-<!-- ======================================= -->
-<!-- CONTAINER THREE.JS                     -->
-<!-- ======================================= -->
-
 <div id="container"></div>
 
 <input
-    id="imageFileInput"
-    type="file"
-    accept="image/*"
-    style="display:none;"
+ id="imageFileInput"
+ type="file"
+ accept="image/*"
+ style="display:none"
 >
 
-<!-- ======================================= -->
-<!-- TELA INICIAL                           -->
-<!-- ======================================= -->
+<!-- TELA INICIAL -->
 
-<div
-    id="poitaWelcome"
-    class="poitaScreen"
->
-    <div class="poitaCard">
-
-        <div class="poitaLogo">
-            POITA
-        </div>
-
-        <div class="poitaSubtitle">
-            MURALLOCK SYSTEM
-        </div>
-
-        <a
-            href="#"
-            id="enterPoitaLink"
-            class="poitaButton"
-        >
-            ENTRAR
-        </a>
-
-    </div>
+<div id="poitaWelcome" class="poitaScreen">
+ <div class="poitaCard">
+  <div class="poitaLogo">POITA</div>
+  <div class="poitaSubtitle">MURALLOCK SYSTEM</div>
+  <a href="#" id="enterPoitaLink" class="poitaButton">
+   ENTRAR
+  </a>
+ </div>
 </div>
 
-<!-- ======================================= -->
-<!-- TELA ABRIR IMAGEM                      -->
-<!-- ======================================= -->
+<!-- SELEÇÃO DA IMAGEM -->
 
-<div
-    id="poitaImageScreen"
-    class="poitaScreen poitaHidden"
->
-    <div class="poitaCard">
-
-        <div class="poitaLogo">
-            POITA
-        </div>
-
-        <div class="poitaSubtitle">
-            MURALLOCK SYSTEM
-        </div>
-
-        <a
-            href="#"
-            id="localImageLink"
-            class="poitaButton"
-        >
-            ABRIR IMAGEM
-        </a>
-
-    </div>
+<div id="poitaImageScreen" class="poitaScreen poitaHidden">
+ <div class="poitaCard">
+  <div class="poitaLogo">POITA</div>
+  <div class="poitaSubtitle">MURALLOCK SYSTEM</div>
+  <a href="#" id="localImageLink" class="poitaButton">
+   ABRIR IMAGEM
+  </a>
+ </div>
 </div>
 
-<!-- ======================================= -->
-<!-- TELA IMAGEM CARREGADA                  -->
-<!-- ======================================= -->
+<!-- IMAGEM CARREGADA -->
 
-<div
-    id="poitaReadyScreen"
-    class="poitaScreen poitaHidden"
->
-    <div class="poitaCard">
+<div id="poitaReadyScreen" class="poitaScreen poitaHidden">
+ <div class="poitaCard">
+  <div class="poitaLogo">POITA</div>
+  <div class="poitaSubtitle">MURALLOCK SYSTEM</div>
 
-        <div class="poitaLogo">
-            POITA
-        </div>
+  <div class="poitaPreview">
+   <img id="poitaImagePreview" alt="Imagem selecionada">
+  </div>
 
-        <div class="poitaSubtitle">
-            MURALLOCK SYSTEM
-        </div>
+  <div class="poitaStatus">IMAGEM CARREGADA</div>
 
-        <div class="poitaPreview">
+  <a href="#" id="startPoitaLink" class="poitaButton">
+   INICIAR
+  </a>
 
-            <img
-                id="poitaImagePreview"
-                alt="Imagem selecionada"
-            >
-
-        </div>
-
-        <div class="poitaStatus">
-            IMAGEM CARREGADA
-        </div>
-
-        <a
-            href="#"
-            id="startPoitaLink"
-            class="poitaButton"
-        >
-            INICIAR
-        </a>
-
-        <a
-            href="#"
-            id="changePoitaImageLink"
-            class="poitaSecondaryButton"
-        >
-            TROCAR IMAGEM
-        </a>
-
-    </div>
+  <a href="#" id="changePoitaImageLink"
+     class="poitaSecondaryButton">
+   TROCAR IMAGEM
+  </a>
+ </div>
 </div>
 
 </body>
