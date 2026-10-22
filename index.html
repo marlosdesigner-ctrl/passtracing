@@ -2,1431 +2,1654 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>POITA - Muralock System</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>POITA - Muralock System</title>
 
-  <style>
-    body {
-      margin: 0;
-      background: #000;
-      font-family: Arial, sans-serif;
-    }
+<style>
+body {
+    margin: 0;
+    background: black;
+    font-family: Arial, sans-serif;
+}
 
-    .poitaScreen {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #111418;
-      z-index: 10;
-    }
+.poitaScreen {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #111418;
+    z-index: 10;
+}
 
-    .poitaCard {
-      text-align: center;
-      color: #fff;
-    }
+.poitaCard {
+    text-align: center;
+    color: #ffffff;
+}
 
-    .poitaLogo {
-      font-size: 52px;
-      font-weight: 700;
-      letter-spacing: 8px;
-      margin-bottom: 6px;
-    }
+.poitaLogo {
+    font-size: 52px;
+    font-weight: 700;
+    letter-spacing: 8px;
+    margin-bottom: 6px;
+}
 
-    .poitaSubtitle {
-      font-size: 13px;
-      letter-spacing: 5px;
-      opacity: 0.65;
-      margin-bottom: 45px;
-    }
+.poitaSubtitle {
+    font-size: 13px;
+    letter-spacing: 5px;
+    opacity: 0.65;
+    margin-bottom: 45px;
+}
 
-    .poitaButton {
-      display: inline-block;
-      min-width: 180px;
-      padding: 14px 28px;
-      border: 1px solid rgba(255,255,255,0.35);
-      border-radius: 6px;
-      color: #fff;
-      text-decoration: none;
-      font-size: 14px;
-      letter-spacing: 3px;
-      cursor: pointer;
-    }
+.poitaButton {
+    display: inline-block;
+    min-width: 180px;
+    padding: 14px 28px;
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 6px;
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    letter-spacing: 3px;
+    cursor: pointer;
+}
 
-    .poitaButton:hover {
-      background: rgba(255,255,255,0.08);
-    }
+.poitaButton:hover {
+    background: rgba(255,255,255,0.08);
+}
 
-    .poitaHidden {
-      display: none;
-    }
+.poitaHidden {
+    display: none;
+}
 
-    .poitaPreview {
-      width: 260px;
-      height: 160px;
-      margin: 0 auto 18px;
-      border: 1px solid rgba(255,255,255,0.20);
-      border-radius: 8px;
-      overflow: hidden;
-      background: #090b0d;
-    }
+.poitaPreview {
+    width: 260px;
+    height: 160px;
+    margin: 0 auto 18px;
+    border: 1px solid rgba(255,255,255,0.20);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #090b0d;
+}
 
-    .poitaPreview img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
+.poitaPreview img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
 
-    .poitaStatus {
-      margin-bottom: 28px;
-      font-size: 11px;
-      letter-spacing: 3px;
-      opacity: 0.55;
-    }
+.poitaStatus {
+    margin-bottom: 28px;
+    font-size: 11px;
+    letter-spacing: 3px;
+    opacity: 0.55;
+}
 
-    .poitaSecondaryButton {
-      display: block;
-      margin: 14px auto 0;
-      color: rgba(255,255,255,0.55);
-      text-decoration: none;
-      font-size: 11px;
-      letter-spacing: 2px;
-      cursor: pointer;
-    }
-  </style>
+.poitaSecondaryButton {
+    display: block;
+    margin: 14px auto 0;
+    color: rgba(255,255,255,0.55);
+    text-decoration: none;
+    font-size: 11px;
+    letter-spacing: 2px;
+    cursor: pointer;
+}
+</style>
 </head>
 
 <body>
 
-  <script async
-    src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js">
-  </script>
+<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
 
-  <script type="importmap">
-  {
+<script type="importmap">
+{
     "imports": {
-      "three": "https://unpkg.com/three@0.147.0/build/three.module.js",
-      "three/addons/": "https://unpkg.com/three@0.147.0/examples/jsm/",
-      "three-mesh-ui": "https://unpkg.com/three-mesh-ui@6.5.2/build/three-mesh-ui.module.js"
+        "three": "https://unpkg.com/three@0.147.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.147.0/examples/jsm/",
+        "three-mesh-ui": "https://unpkg.com/three-mesh-ui@6.5.2/build/three-mesh-ui.module.js"
     }
-  }
-  </script>
+}
+</script>
 
-  <!-- SHADER DE VÉRTICES -->
+<!-- SHADER DE VÉRTICES -->
 
-  <script type="x-shader/x-vertex" id="vertexshader">
-    varying vec2 vUv;
+<script type="x-shader/x-vertex" id="vertexshader">
+varying vec2 vUv;
 
-    void main() {
-      vUv = uv;
-      gl_Position =
+void main() {
+    vUv = uv;
+
+    gl_Position =
         projectionMatrix *
         modelViewMatrix *
         vec4(position, 1.0);
-    }
-  </script>
+}
+</script>
 
-  <!-- SHADER DE FRAGMENTOS -->
+<!-- SHADER DE FRAGMENTOS -->
 
-  <script type="x-shader/x-fragment" id="fragmentshader">
-    uniform sampler2D colorTexture;
-    uniform float opacity;
+<script type="x-shader/x-fragment" id="fragmentshader">
+uniform sampler2D colorTexture;
+uniform float opacity;
 
-    float stepSize = 2.0;
-    varying vec2 vUv;
+float stepSize = 2.0;
 
-    float intensity(in vec4 color) {
-      return sqrt(
+varying vec2 vUv;
+
+float intensity(in vec4 color) {
+    return sqrt(
         color.x * color.x +
         color.y * color.y +
         color.z * color.z
-      );
-    }
+    );
+}
 
-    void main() {
-      vec2 uv = vUv;
+void main() {
+    vec2 uv = vUv;
 
-      ivec2 imageSize = textureSize(colorTexture, 0);
+    ivec2 imageSize = textureSize(colorTexture, 0);
 
-      vec2 step = vec2(
+    vec2 step = vec2(
         stepSize / float(imageSize.x),
         stepSize / float(imageSize.y)
-      );
+    );
 
-      float topLeft = intensity(
+    float topLeft = intensity(
         texture2D(colorTexture, uv + vec2(-step.x, step.y))
-      );
+    );
 
-      float left = intensity(
+    float left = intensity(
         texture2D(colorTexture, uv + vec2(-step.x, 0.0))
-      );
+    );
 
-      float bottomLeft = intensity(
+    float bottomLeft = intensity(
         texture2D(colorTexture, uv + vec2(-step.x, -step.y))
-      );
+    );
 
-      float top = intensity(
+    float top = intensity(
         texture2D(colorTexture, uv + vec2(0.0, step.y))
-      );
+    );
 
-      float bottom = intensity(
+    float bottom = intensity(
         texture2D(colorTexture, uv + vec2(0.0, -step.y))
-      );
+    );
 
-      float topRight = intensity(
+    float topRight = intensity(
         texture2D(colorTexture, uv + vec2(step.x, step.y))
-      );
+    );
 
-      float right = intensity(
+    float right = intensity(
         texture2D(colorTexture, uv + vec2(step.x, 0.0))
-      );
+    );
 
-      float bottomRight = intensity(
+    float bottomRight = intensity(
         texture2D(colorTexture, uv + vec2(step.x, -step.y))
-      );
+    );
 
-      float horizontal =
+    float horizontal =
         topLeft + 2.0 * left + bottomLeft -
         topRight - 2.0 * right - bottomRight;
 
-      float vertical =
+    float vertical =
         -topLeft - 2.0 * top - topRight +
         bottomLeft + 2.0 * bottom + bottomRight;
 
-      float sobelResult = sqrt(
+    float sobelResult = sqrt(
         horizontal * horizontal +
         vertical * vertical
-      );
+    );
 
-      vec4 sobelColor = vec4(
+    vec4 sobelColor = vec4(
         1.0 - sobelResult,
         1.0 - sobelResult,
         1.0 - sobelResult,
         sobelResult
-      );
+    );
 
-      vec4 currentColor = texture2D(colorTexture, uv);
+    vec4 currentColor = texture2D(colorTexture, uv);
 
-      float smoothOpacity =
-        smoothstep(0.0, 0.3, opacity);
+    float smoothOpacity = smoothstep(
+        0.0, 0.3, opacity
+    );
 
-      gl_FragColor = vec4(
+    gl_FragColor = vec4(
         currentColor.rgb * smoothOpacity +
         (1.0 - smoothOpacity) * sobelColor.rgb,
 
         currentColor.a * min(opacity, smoothOpacity) +
         (1.0 - smoothOpacity) * sobelColor.a
-      );
-    }
-  </script>
+    );
+}
+</script>
 
-  <script type="module">
+<script type="module">
 
-    import * as THREE from "three";
+import * as THREE from "three";
 
-    import { OrbitControls }
-      from "three/addons/controls/OrbitControls.js";
+import { OrbitControls }
+    from "three/addons/controls/OrbitControls.js";
 
-    import { ARButton }
-      from "three/addons/webxr/ARButton.js";
+import { ARButton }
+    from "three/addons/webxr/ARButton.js";
 
-    import ThreeMeshUI from "three-mesh-ui";
+// ==========================================
+// POITA - MURALOCK SYSTEM
+// FIXAR / DESAFIXAR V2
+// ==========================================
 
-    // ==========================================
-    // VARIÁVEIS PRINCIPAIS
-    // ==========================================
+// VARIÁVEIS PRINCIPAIS
 
-    let container;
-    let camera;
-    let scene;
-    let renderer;
+let container;
+let camera;
+let scene;
+let renderer;
 
-    let controller1;
-    let controller2;
-    let clock;
+let controller1;
+let controller2;
 
-    let group = null;
-    let imagePlane = null;
+let clock;
 
-    let currentOpacity = 0.75;
-    let currentScale = 1.0;
+let group = null;
+let imagePlane = null;
 
-    let previousDidPressHideImage = false;
+let currentOpacity = 0.75;
+let currentScale = 1.0;
 
-    let currentMode = "scale";
+let previousDidPressHideImage = false;
 
-    // Estado exclusivo da imagem
-    let imageFixed = false;
+let currentMode = "scale";
 
-    let modePanel = null;
-    let modeButtons = [];
+// Esta variável bloqueia SOMENTE
+// as transformações da imagem.
 
-    let menuHitArea = null;
-    let hoveredMode = null;
+let imageFixed = false;
 
-    const uiRaycaster = new THREE.Raycaster();
-    const uiRayMatrix = new THREE.Matrix4();
+// INTERFACE INDEPENDENTE
 
-    const previousTriggerPressed = [false, false];
+let modePanel = null;
+let modeButtons = [];
 
-    // ==========================================
-    // INICIALIZAÇÃO
-    // ==========================================
+let menuHitArea = null;
+let hoveredMode = null;
 
-    init();
-    animate();
+const uiRaycaster = new THREE.Raycaster();
+const uiRayMatrix = new THREE.Matrix4();
 
-    function init() {
+const previousTriggerPressed = [false, false];
 
-      container = document.getElementById("container");
+// ==========================================
+// INICIALIZAÇÃO
+// ==========================================
 
-      scene = new THREE.Scene();
+init();
+animate();
 
-      camera = new THREE.PerspectiveCamera(
+function init() {
+
+    container = document.getElementById("container");
+
+    scene = new THREE.Scene();
+
+    camera = new THREE.PerspectiveCamera(
         50,
         window.innerWidth / window.innerHeight,
         0.1,
         10
-      );
+    );
 
-      camera.position.set(0, 0, 1);
+    camera.position.set(0, 0, 1);
 
-      const controls = new OrbitControls(
+    const controls = new OrbitControls(
         camera,
         container
-      );
+    );
 
-      controls.minDistance = 0;
-      controls.maxDistance = 8;
+    controls.minDistance = 0;
+    controls.maxDistance = 8;
 
-      clock = new THREE.Clock();
+    clock = new THREE.Clock();
 
-      renderer = new THREE.WebGLRenderer({
+    renderer = new THREE.WebGLRenderer({
         antialias: true,
         alpha: true
-      });
+    });
 
-      renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setPixelRatio(window.devicePixelRatio);
 
-      renderer.setSize(
+    renderer.setSize(
         window.innerWidth,
         window.innerHeight
-      );
+    );
 
-      renderer.outputEncoding = THREE.sRGBEncoding;
-      renderer.localClippingEnabled = true;
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.localClippingEnabled = true;
 
-      renderer.xr.enabled = true;
-      renderer.xr.setFoveation(0);
+    renderer.xr.enabled = true;
+    renderer.xr.setFoveation(0);
 
-      container.appendChild(renderer.domElement);
+    container.appendChild(renderer.domElement);
 
-      // ========================================
-      // CONTROLADORES
-      // ========================================
+    // ======================================
+    // CONTROLADORES
+    // ======================================
 
-      controller1 = renderer.xr.getController(0);
-      controller2 = renderer.xr.getController(1);
+    controller1 = renderer.xr.getController(0);
+    controller2 = renderer.xr.getController(1);
 
-      scene.add(controller1);
-      scene.add(controller2);
+    scene.add(controller1);
+    scene.add(controller2);
 
-      const rayGeometry =
+    const rayGeometry =
         new THREE.BufferGeometry().setFromPoints([
-          new THREE.Vector3(0, 0, 0),
-          new THREE.Vector3(0, 0, -1)
+            new THREE.Vector3(0, 0, 0),
+            new THREE.Vector3(0, 0, -1)
         ]);
 
-      const rayMaterial =
+    const rayMaterial =
         new THREE.LineBasicMaterial({
-          color: 0xffffff
+            color: 0xffffff
         });
 
-      const ray1 = new THREE.Line(
+    const ray1 = new THREE.Line(
         rayGeometry,
         rayMaterial
-      );
+    );
 
-      ray1.scale.z = 3;
-      controller1.add(ray1);
+    ray1.scale.z = 3;
+    controller1.add(ray1);
 
-      const ray2 = ray1.clone();
-      controller2.add(ray2);
+    const ray2 = ray1.clone();
+    controller2.add(ray2);
 
-      // Painel preso ao controlador 1
-      makeModeUI();
+    // Cria o painel independente
 
-      // ========================================
-      // GRUPO DA IMAGEM
-      // ========================================
+    makeModeUI();
 
-      group = new THREE.Group();
+    // ======================================
+    // GRUPO DA IMAGEM
+    // ======================================
 
-      group.position.set(
-        0,
-        0,
-        -0.5
-      );
+    group = new THREE.Group();
 
-      scene.add(group);
+    group.position.set(0, 0, -0.5);
 
-      loadTexture(
+    scene.add(group);
+
+    loadTexture(
         group,
         0.25,
         "Images/discovery.jpg"
-      );
+    );
 
-      window.addEventListener(
+    window.addEventListener(
         "resize",
         onWindowResize
-      );
+    );
 
-      // ========================================
-      // TELAS HTML
-      // ========================================
+    // ======================================
+    // INTERFACE HTML
+    // ======================================
 
-      const enterPoitaLink =
+    const enterPoitaLink =
         document.getElementById("enterPoitaLink");
 
-      const poitaWelcome =
+    const poitaWelcome =
         document.getElementById("poitaWelcome");
 
-      const poitaImageScreen =
+    const poitaImageScreen =
         document.getElementById("poitaImageScreen");
 
-      const poitaReadyScreen =
+    const poitaReadyScreen =
         document.getElementById("poitaReadyScreen");
 
-      const startPoitaLink =
+    const startPoitaLink =
         document.getElementById("startPoitaLink");
 
-      const localImageLink =
+    const localImageLink =
         document.getElementById("localImageLink");
 
-      const changePoitaImageLink =
+    const changePoitaImageLink =
         document.getElementById("changePoitaImageLink");
 
-      const imageFileInput =
+    const imageFileInput =
         document.getElementById("imageFileInput");
 
-      enterPoitaLink.onclick = function(event) {
+    enterPoitaLink.onclick = function(event) {
+
         event.preventDefault();
 
         poitaWelcome.classList.add("poitaHidden");
 
         poitaImageScreen.classList.remove(
-          "poitaHidden"
+            "poitaHidden"
         );
-      };
+    };
 
-      localImageLink.onclick = function(event) {
+    localImageLink.onclick = function(event) {
+
         event.preventDefault();
 
         imageFileInput.value = "";
         imageFileInput.click();
-      };
+    };
 
-      imageFileInput.onchange = handleLocalImage;
+    imageFileInput.onchange = handleLocalImage;
 
-      changePoitaImageLink.onclick = function(event) {
+    changePoitaImageLink.onclick = function(event) {
+
         event.preventDefault();
 
         imageFileInput.value = "";
         imageFileInput.click();
-      };
+    };
 
-      startPoitaLink.onclick = function(event) {
+    startPoitaLink.onclick = function(event) {
+
         event.preventDefault();
 
         const arButton =
-          document.getElementById("ARButton");
+            document.getElementById("ARButton");
 
         if (arButton) {
-          poitaReadyScreen.classList.add(
-            "poitaHidden"
-          );
 
-          arButton.click();
+            poitaReadyScreen.classList.add(
+                "poitaHidden"
+            );
+
+            arButton.click();
         }
-      };
-    }
+    };
+}
 
-    // ==========================================
-    // CRIAÇÃO DO PAINEL DE CONTROLE
-    // ==========================================
+// ==========================================
+// PAINEL DE CONTROLE INDEPENDENTE
+// ==========================================
+//
+// Nesta versão, o painel usa apenas
+// objetos nativos do Three.js.
+//
+// Os textos são CanvasTexture.
+//
+// Não existe atualização de layout
+// pelo ThreeMeshUI.
+// ==========================================
 
-    function makeModeUI() {
+function makeModeUI() {
 
-      const fontFamily =
-        "https://unpkg.com/three-mesh-ui@6.5.2/examples/assets/Roboto-msdf.json";
+    modePanel = new THREE.Group();
 
-      const fontTexture =
-        "https://unpkg.com/three-mesh-ui@6.5.2/examples/assets/Roboto-msdf.png";
+    modePanel.position.set(
+        0.0405,
+        0.027,
+        -0.0108
+    );
 
-      modePanel = new ThreeMeshUI.Block({
-        width: 0.99,
-        height: 0.22,
-        padding: 0.025,
-        contentDirection: "column",
-        justifyContent: "center",
-        alignContent: "center",
-        borderRadius: 0.025,
-        backgroundColor: new THREE.Color(0x20252b),
-        backgroundOpacity: 0.90,
-        fontFamily,
-        fontTexture
-      });
+    modePanel.scale.setScalar(0.27);
 
-      modePanel.position.set(
-        0.15,
-        0.10,
-        -0.04
-      );
+    // Painel preso ao controlador 1
 
-      modePanel.scale.set(
-        0.27,
-        0.27,
-        0.27
-      );
+    controller1.add(modePanel);
 
-      menuHitArea = new THREE.Mesh(
-        new THREE.PlaneGeometry(1.02, 0.25),
-        new THREE.MeshBasicMaterial({
-          transparent: true,
-          opacity: 0,
-          side: THREE.DoubleSide,
-          depthWrite: false
-        })
-      );
+    // FUNDO DO PAINEL
 
-      menuHitArea.position.z = 0.001;
+    const background = new THREE.Mesh(
 
-      THREE.Object3D.prototype.add.call(
-        modePanel,
-        menuHitArea
-      );
-
-      const title = new ThreeMeshUI.Text({
-        content: "POITA  •  CONTROLE",
-        fontSize: 0.032,
-        fontColor: new THREE.Color(0xffffff)
-      });
-
-      const buttonRow = new ThreeMeshUI.Block({
-        width: 0.94,
-        height: 0.10,
-        margin: 0.015,
-        contentDirection: "row",
-        justifyContent: "center",
-        alignContent: "center",
-        backgroundOpacity: 0
-      });
-
-      buttonRow.add(
-        createModeButton("ESCALA", "scale"),
-        createModeButton("X", "x"),
-        createModeButton("Y", "y"),
-        createModeButton("Z", "z"),
-        createModeButton("FIXAR", "fix")
-      );
-
-      modePanel.add(title, buttonRow);
-
-      controller1.add(modePanel);
-
-      updateModeButtonVisuals();
-    }
-
-    // ==========================================
-    // CRIAÇÃO DOS BOTÕES
-    // ==========================================
-
-    function createModeButton(label, mode) {
-
-      const width =
-        mode === "fix" ? 0.22 : 0.155;
-
-      const button = new ThreeMeshUI.Block({
-        width,
-        height: 0.075,
-        margin: 0.008,
-        justifyContent: "center",
-        alignContent: "center",
-        borderRadius: 0.015,
-        backgroundColor: new THREE.Color(0x404750),
-        backgroundOpacity: 1
-      });
-
-      const labelText = new ThreeMeshUI.Text({
-        content: label,
-        fontSize: mode === "fix" ? 0.023 : 0.027,
-        fontColor: new THREE.Color(0xffffff)
-      });
-
-      button.add(labelText);
-
-      const hitArea = new THREE.Mesh(
         new THREE.PlaneGeometry(
-          width + 0.01,
-          0.09
+            0.99,
+            0.22
         ),
+
         new THREE.MeshBasicMaterial({
-          transparent: true,
-          opacity: 0,
-          side: THREE.DoubleSide,
-          depthWrite: false
+            color: 0x20252b,
+            transparent: true,
+            opacity: 0.94,
+            side: THREE.DoubleSide,
+            depthTest: false
         })
-      );
+    );
 
-      hitArea.position.z = 0.003;
+    background.position.z = -0.003;
+    background.renderOrder = 100;
 
-      THREE.Object3D.prototype.add.call(
-        button,
-        hitArea
-      );
+    modePanel.add(background);
 
-      modeButtons.push({
-        object: button,
-        hitArea,
-        text: labelText,
-        mode
-      });
+    // ÁREA DE INTERAÇÃO DO PAINEL
 
-      return button;
+    menuHitArea = new THREE.Mesh(
+
+        new THREE.PlaneGeometry(
+            1.02,
+            0.25
+        ),
+
+        new THREE.MeshBasicMaterial({
+            transparent: true,
+            opacity: 0,
+            side: THREE.DoubleSide,
+            depthWrite: false,
+            depthTest: false
+        })
+    );
+
+    menuHitArea.position.z = 0.001;
+
+    modePanel.add(menuHitArea);
+
+    // TÍTULO
+
+    const title = createCanvasLabel(
+        "POITA  •  CONTROLE",
+        0.88,
+        0.060,
+        34
+    );
+
+    title.position.set(
+        0,
+        0.063,
+        0.004
+    );
+
+    modePanel.add(title);
+
+    // BOTÕES
+
+    const specs = [
+        ["ESCALA", "scale", 0.155],
+        ["X", "x", 0.155],
+        ["Y", "y", 0.155],
+        ["Z", "z", 0.155],
+        ["FIXAR", "fix", 0.22]
+    ];
+
+    const gap = 0.014;
+
+    const total =
+        specs.reduce(
+            (sum, item) => sum + item[2],
+            0
+        ) +
+        gap * (specs.length - 1);
+
+    let x = -total / 2;
+
+    for (const [label, mode, width] of specs) {
+
+        const item = createModeButton(
+            label,
+            mode,
+            width
+        );
+
+        item.object.position.set(
+            x + width / 2,
+            -0.035,
+            0.006
+        );
+
+        modePanel.add(item.object);
+
+        x += width + gap;
     }
 
-    // ==========================================
-    // CORREÇÃO: ATUALIZAÇÃO VISUAL DOS BOTÕES
-    // ==========================================
-    //
-    // As propriedades só são reaplicadas
-    // quando o estado visual realmente muda.
-    //
-    // FIXAR e DESAFIXAR permanecem acessíveis.
-    // ==========================================
+    updateModeButtonVisuals();
+}
 
-    function updateModeButtonVisuals() {
+// ==========================================
+// TEXTOS COM CANVAS TEXTURE
+// ==========================================
 
-      for (const info of modeButtons) {
+function createCanvasLabel(
+    content,
+    width,
+    height,
+    fontSize = 44
+) {
+
+    const canvas =
+        document.createElement("canvas");
+
+    canvas.width = 512;
+    canvas.height = 128;
+
+    const ctx = canvas.getContext("2d");
+
+    const texture = new THREE.CanvasTexture(
+        canvas
+    );
+
+    const material = new THREE.MeshBasicMaterial({
+        map: texture,
+        transparent: true,
+        depthTest: false,
+        depthWrite: false,
+        side: THREE.DoubleSide
+    });
+
+    const mesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(width, height),
+        material
+    );
+
+    mesh.renderOrder = 103;
+
+    mesh.userData.label = {
+        canvas,
+        ctx,
+        texture,
+        fontSize
+    };
+
+    drawCanvasLabel(mesh, content);
+
+    return mesh;
+}
+
+function drawCanvasLabel(mesh, value) {
+
+    // Não redesenha se o texto não mudou
+
+    if (mesh.userData.lastLabel === value) {
+        return;
+    }
+
+    const {
+        canvas,
+        ctx,
+        texture,
+        fontSize
+    } = mesh.userData.label;
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    ctx.font = "bold " + fontSize + "px Arial";
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    ctx.fillStyle = "#ffffff";
+
+    ctx.fillText(
+        value,
+        canvas.width / 2,
+        canvas.height / 2,
+        canvas.width - 16
+    );
+
+    texture.needsUpdate = true;
+
+    mesh.userData.lastLabel = value;
+}
+
+// ==========================================
+// CRIAÇÃO DOS BOTÕES
+// ==========================================
+
+function createModeButton(label, mode, width) {
+
+    const holder = new THREE.Group();
+
+    const background = new THREE.Mesh(
+
+        new THREE.PlaneGeometry(
+            width,
+            0.075
+        ),
+
+        new THREE.MeshBasicMaterial({
+            color: 0x404750,
+            transparent: true,
+            opacity: 1,
+            depthTest: false,
+            side: THREE.DoubleSide
+        })
+    );
+
+    background.renderOrder = 101;
+
+    holder.add(background);
+
+    const textMesh = createCanvasLabel(
+        label,
+        width * 0.96,
+        0.064,
+        mode === "fix" ? 37 : 44
+    );
+
+    textMesh.position.z = 0.002;
+
+    holder.add(textMesh);
+
+    // Área de clique
+
+    const hitArea = new THREE.Mesh(
+
+        new THREE.PlaneGeometry(
+            width + 0.009,
+            0.09
+        ),
+
+        new THREE.MeshBasicMaterial({
+            transparent: true,
+            opacity: 0,
+            side: THREE.DoubleSide,
+            depthWrite: false,
+            depthTest: false
+        })
+    );
+
+    hitArea.position.z = 0.009;
+
+    holder.add(hitArea);
+
+    const item = {
+        object: holder,
+        hitArea,
+        textMesh,
+        background,
+        mode
+    };
+
+    modeButtons.push(item);
+
+    return item;
+}
+
+// ==========================================
+// ATUALIZAÇÃO VISUAL DOS BOTÕES
+// ==========================================
+//
+// FIXAR:
+//   bloqueia ajustes da imagem.
+//
+// DESAFIXAR:
+//   libera novamente os ajustes.
+//
+// O painel não é bloqueado.
+// ==========================================
+
+function updateModeButtonVisuals() {
+
+    for (const info of modeButtons) {
 
         const isFix = info.mode === "fix";
 
         const label = isFix
-          ? (imageFixed ? "DESAFIXAR" : "FIXAR")
-          : (
-              info.mode === "scale"
-                ? "ESCALA"
-                : info.mode.toUpperCase()
-            );
-
-        const color = isFix
-          ? (imageFixed ? 0x267d59 : 0xff8800)
-          : imageFixed
-            ? 0x404750
+            ? (
+                imageFixed
+                    ? "DESAFIXAR"
+                    : "FIXAR"
+              )
             : (
-                info.mode === currentMode ||
-                info.mode === hoveredMode
-                  ? 0xff8800
-                  : 0x404750
+                info.mode === "scale"
+                    ? "ESCALA"
+                    : info.mode.toUpperCase()
               );
 
+        const color = isFix
+            ? (
+                imageFixed
+                    ? 0x267d59
+                    : 0xff8800
+              )
+            : imageFixed
+                ? 0x404750
+                : (
+                    info.mode === currentMode ||
+                    info.mode === hoveredMode
+                        ? 0xff8800
+                        : 0x404750
+                  );
+
         const opacity =
-          (!isFix && imageFixed) ? 0.25 : 1;
+            (!isFix && imageFixed)
+                ? 0.25
+                : 1;
 
-        if (info.displayLabel !== label) {
+        // Atualiza somente quando necessário
 
-          info.text.set({
-            content: label
-          });
+        if (info.lastColor !== color) {
 
-          info.displayLabel = label;
+            info.background.material.color.setHex(
+                color
+            );
+
+            info.lastColor = color;
         }
 
-        if (
-          info.lastColor !== color ||
-          info.lastOpacity !== opacity
-        ) {
+        if (info.lastOpacity !== opacity) {
 
-          info.object.set({
-            backgroundColor: new THREE.Color(color),
-            backgroundOpacity: opacity
-          });
+            info.background.material.opacity =
+                opacity;
 
-          info.lastColor = color;
-          info.lastOpacity = opacity;
+            info.textMesh.material.opacity =
+                opacity;
+
+            info.lastOpacity = opacity;
         }
-      }
+
+        drawCanvasLabel(
+            info.textMesh,
+            label
+        );
+    }
+}
+
+// ==========================================
+// DETECÇÃO DE CLIQUE NOS BOTÕES
+// ==========================================
+
+function getHoveredModeButton(controller) {
+
+    controller.updateMatrixWorld(true);
+
+    if (modePanel) {
+        modePanel.updateMatrixWorld(true);
     }
 
-    // ==========================================
-    // DETECÇÃO DOS BOTÕES PELO CONTROLADOR
-    // ==========================================
-
-    function getHoveredModeButton(controller) {
-
-      controller.updateMatrixWorld(true);
-
-      if (modePanel) {
-        modePanel.updateMatrixWorld(true);
-      }
-
-      uiRayMatrix.identity().extractRotation(
+    uiRayMatrix.identity().extractRotation(
         controller.matrixWorld
-      );
+    );
 
-      uiRaycaster.ray.origin.setFromMatrixPosition(
+    uiRaycaster.ray.origin.setFromMatrixPosition(
         controller.matrixWorld
-      );
+    );
 
-      uiRaycaster.ray.direction
+    uiRaycaster.ray.direction
         .set(0, 0, -1)
         .applyMatrix4(uiRayMatrix)
         .normalize();
 
-      let closestButton = null;
-      let closestDistance = Infinity;
+    let closestButton = null;
+    let closestDistance = Infinity;
 
-      for (const buttonInfo of modeButtons) {
+    for (const buttonInfo of modeButtons) {
 
         buttonInfo.hitArea.updateMatrixWorld(true);
 
         const intersections =
-          uiRaycaster.intersectObject(
-            buttonInfo.hitArea,
-            false
-          );
+            uiRaycaster.intersectObject(
+                buttonInfo.hitArea,
+                false
+            );
 
         if (
-          intersections.length > 0 &&
-          intersections[0].distance < closestDistance
+            intersections.length > 0 &&
+            intersections[0].distance < closestDistance
         ) {
 
-          closestDistance =
-            intersections[0].distance;
+            closestDistance =
+                intersections[0].distance;
 
-          closestButton = buttonInfo;
+            closestButton = buttonInfo;
         }
-      }
+    }
 
-      // Com a imagem fixada, apenas
-      // DESAFIXAR pode receber clique.
+    // Com a imagem fixada,
+    // somente DESAFIXAR pode ser acionado.
 
-      if (
+    if (
         imageFixed &&
         closestButton &&
         closestButton.mode !== "fix"
-      ) {
+    ) {
         return null;
-      }
-
-      return closestButton;
     }
 
-    function isPointerOverModePanel(controller) {
+    return closestButton;
+}
 
-      if (!menuHitArea || !modePanel) {
+function isPointerOverModePanel(controller) {
+
+    if (!menuHitArea || !modePanel) {
         return false;
-      }
+    }
 
-      controller.updateMatrixWorld(true);
-      modePanel.updateMatrixWorld(true);
-      menuHitArea.updateMatrixWorld(true);
+    controller.updateMatrixWorld(true);
 
-      uiRayMatrix.identity().extractRotation(
+    modePanel.updateMatrixWorld(true);
+    menuHitArea.updateMatrixWorld(true);
+
+    uiRayMatrix.identity().extractRotation(
         controller.matrixWorld
-      );
+    );
 
-      uiRaycaster.ray.origin.setFromMatrixPosition(
+    uiRaycaster.ray.origin.setFromMatrixPosition(
         controller.matrixWorld
-      );
+    );
 
-      uiRaycaster.ray.direction
+    uiRaycaster.ray.direction
         .set(0, 0, -1)
         .applyMatrix4(uiRayMatrix)
         .normalize();
 
-      const intersections =
+    const intersections =
         uiRaycaster.intersectObject(
-          menuHitArea,
-          false
+            menuHitArea,
+            false
         );
 
-      return intersections.length > 0;
+    return intersections.length > 0;
+}
+
+// ==========================================
+// ABRIR IMAGEM LOCAL
+// ==========================================
+
+function handleLocalImage(event) {
+
+    const file = event.target.files[0];
+
+    if (!file) {
+        return;
     }
 
-    // ==========================================
-    // ABRIR IMAGEM LOCAL
-    // ==========================================
+    if (!file.type.startsWith("image/")) {
 
-    function handleLocalImage(event) {
-
-      const file = event.target.files[0];
-
-      if (!file) {
-        return;
-      }
-
-      if (!file.type.startsWith("image/")) {
         alert(
-          "O arquivo selecionado não é uma imagem."
+            "O arquivo selecionado não é uma imagem."
         );
-        return;
-      }
 
-      const localImageUrl =
+        return;
+    }
+
+    const localImageUrl =
         URL.createObjectURL(file);
 
-      const preview =
+    const preview =
         document.getElementById(
-          "poitaImagePreview"
+            "poitaImagePreview"
         );
 
-      const imageScreen =
+    const imageScreen =
         document.getElementById(
-          "poitaImageScreen"
+            "poitaImageScreen"
         );
 
-      const readyScreen =
+    const readyScreen =
         document.getElementById(
-          "poitaReadyScreen"
+            "poitaReadyScreen"
         );
 
-      preview.src = localImageUrl;
+    preview.src = localImageUrl;
 
-      replaceImage(localImageUrl);
+    replaceImage(localImageUrl);
 
-      imageScreen.classList.add(
+    imageScreen.classList.add(
         "poitaHidden"
-      );
+    );
 
-      readyScreen.classList.remove(
+    readyScreen.classList.remove(
         "poitaHidden"
-      );
-    }
+    );
+}
 
-    // ==========================================
-    // TROCAR IMAGEM
-    // ==========================================
+// ==========================================
+// TROCAR IMAGEM
+// ==========================================
 
-    function replaceImage(url) {
+function replaceImage(url) {
 
-      if (imagePlane) {
+    if (imagePlane) {
 
         group.remove(imagePlane);
 
         if (imagePlane.geometry) {
-          imagePlane.geometry.dispose();
+            imagePlane.geometry.dispose();
         }
 
         if (imagePlane.material) {
 
-          const uniforms =
-            imagePlane.material.uniforms;
+            const uniforms =
+                imagePlane.material.uniforms;
 
-          if (
-            uniforms &&
-            uniforms.colorTexture &&
-            uniforms.colorTexture.value
-          ) {
-            uniforms.colorTexture.value.dispose();
-          }
+            if (
+                uniforms &&
+                uniforms.colorTexture &&
+                uniforms.colorTexture.value
+            ) {
 
-          imagePlane.material.dispose();
+                uniforms.colorTexture.value.dispose();
+            }
+
+            imagePlane.material.dispose();
         }
 
         imagePlane = null;
-      }
+    }
 
-      loadTexture(
+    loadTexture(
         group,
         0.25,
         url
-      );
-    }
+    );
+}
 
-    // ==========================================
-    // CARREGAR TEXTURA
-    // ==========================================
+// ==========================================
+// CARREGAMENTO DA TEXTURA
+// ==========================================
 
-    function loadTexture(target, length, url) {
+function loadTexture(target, length, url) {
 
-      const loader = new THREE.TextureLoader();
+    const loader = new THREE.TextureLoader();
 
-      loader.load(
+    loader.load(
 
         url,
 
         function(texture) {
 
-          if (
-            document.getElementById("ARButton") === null
-          ) {
+            // Cria botão de entrada no WebXR
 
-            document.body.appendChild(
-              ARButton.createButton(renderer)
-            );
-          }
+            if (
+                document.getElementById("ARButton") === null
+            ) {
 
-          const originalWidth =
-            texture.image.width;
+                document.body.appendChild(
+                    ARButton.createButton(renderer)
+                );
+            }
 
-          const originalHeight =
-            texture.image.height;
+            const originalWidth =
+                texture.image.width;
 
-          const max = Math.max(
-            originalWidth,
-            originalHeight
-          );
+            const originalHeight =
+                texture.image.height;
 
-          const width =
-            (originalWidth / max) * length;
-
-          const height =
-            (originalHeight / max) * length;
-
-          const geometry =
-            new THREE.PlaneGeometry(
-              width,
-              height
+            const max = Math.max(
+                originalWidth,
+                originalHeight
             );
 
-          texture.generateMipmaps = false;
+            const width =
+                (originalWidth / max) * length;
 
-          const sobelMaterial =
-            new THREE.ShaderMaterial({
+            const height =
+                (originalHeight / max) * length;
 
-              transparent: true,
+            const geometry =
+                new THREE.PlaneGeometry(
+                    width,
+                    height
+                );
 
-              side: THREE.DoubleSide,
+            texture.generateMipmaps = false;
 
-              uniforms: {
-                colorTexture: {
-                  value: texture
-                },
+            const sobelMaterial =
+                new THREE.ShaderMaterial({
 
-                opacity: {
-                  value: currentOpacity
-                }
-              },
+                    transparent: true,
 
-              vertexShader:
-                document.getElementById(
-                  "vertexshader"
-                ).textContent,
+                    side: THREE.DoubleSide,
 
-              fragmentShader:
-                document.getElementById(
-                  "fragmentshader"
-                ).textContent
-            });
+                    uniforms: {
 
-          imagePlane = new THREE.Mesh(
-            geometry,
-            sobelMaterial
-          );
+                        colorTexture: {
+                            value: texture
+                        },
 
-          target.add(imagePlane);
+                        opacity: {
+                            value: currentOpacity
+                        }
+                    },
+
+                    vertexShader:
+                        document.getElementById(
+                            "vertexshader"
+                        ).textContent,
+
+                    fragmentShader:
+                        document.getElementById(
+                            "fragmentshader"
+                        ).textContent
+                });
+
+            imagePlane = new THREE.Mesh(
+                geometry,
+                sobelMaterial
+            );
+
+            target.add(imagePlane);
         },
 
         undefined,
 
         function(error) {
 
-          console.error(
-            "Erro ao carregar imagem:",
-            error
-          );
+            console.error(
+                "Erro ao carregar imagem:",
+                error
+            );
 
-          alert(
-            "Não foi possível carregar a imagem."
-          );
+            alert(
+                "Não foi possível carregar a imagem."
+            );
         }
-      );
+    );
+}
+
+// ==========================================
+// OPACIDADE
+// ==========================================
+
+function incrementOpacity(delta) {
+
+    if (imageFixed) {
+        return;
     }
 
-    // ==========================================
-    // OPACIDADE
-    // ==========================================
+    currentOpacity += delta;
 
-    function incrementOpacity(delta) {
-
-      if (imageFixed) return;
-
-      currentOpacity += delta;
-
-      currentOpacity = Math.min(
+    currentOpacity = Math.min(
         Math.max(currentOpacity, 0),
         1
-      );
+    );
 
-      if (imagePlane) {
+    if (imagePlane) {
 
         imagePlane.material
-          .uniforms.opacity.value =
-            currentOpacity;
-      }
+            .uniforms.opacity.value =
+                currentOpacity;
+    }
+}
+
+// ==========================================
+// ESCALA
+// ==========================================
+
+function incrementScale(delta) {
+
+    if (imageFixed) {
+        return;
     }
 
-    // ==========================================
-    // ESCALA
-    // ==========================================
-
-    function incrementScale(delta) {
-
-      if (imageFixed) return;
-
-      const scaleSpeed = Math.max(
+    const scaleSpeed = Math.max(
         currentScale,
         1
-      );
+    );
 
-      currentScale +=
-        delta * scaleSpeed;
+    currentScale += delta * scaleSpeed;
 
-      currentScale = Math.min(
+    currentScale = Math.min(
         Math.max(currentScale, 0),
         40
-      );
+    );
 
-      if (group) {
+    if (group) {
 
         group.scale.set(
-          currentScale,
-          currentScale,
-          currentScale
+            currentScale,
+            currentScale,
+            currentScale
         );
-      }
     }
+}
 
-    // ==========================================
-    // POSICIONAMENTO X / Y / Z
-    // ==========================================
+// ==========================================
+// POSICIONAMENTO X / Y / Z
+// ==========================================
 
-    function moveImage(axis, delta) {
+function moveImage(axis, delta) {
 
-      if (imageFixed || !group) {
+    if (imageFixed || !group) {
         return;
-      }
-
-      const moveSpeed = 0.35;
-
-      const distance =
-        delta * moveSpeed;
-
-      if (axis === "x") {
-        group.translateX(distance);
-      }
-
-      else if (axis === "y") {
-        group.translateY(distance);
-      }
-
-      else if (axis === "z") {
-        group.translateZ(distance);
-      }
     }
 
-    // ==========================================
-    // REDIMENSIONAMENTO DA JANELA
-    // ==========================================
+    const moveSpeed = 0.35;
 
-    function onWindowResize() {
+    const distance = delta * moveSpeed;
 
-      camera.aspect =
+    if (axis === "x") {
+
+        group.translateX(distance);
+    }
+
+    else if (axis === "y") {
+
+        group.translateY(distance);
+    }
+
+    else if (axis === "z") {
+
+        group.translateZ(distance);
+    }
+}
+
+// ==========================================
+// REDIMENSIONAMENTO DA JANELA
+// ==========================================
+
+function onWindowResize() {
+
+    camera.aspect =
         window.innerWidth /
         window.innerHeight;
 
-      camera.updateProjectionMatrix();
+    camera.updateProjectionMatrix();
 
-      renderer.setSize(
+    renderer.setSize(
         window.innerWidth,
         window.innerHeight
-      );
-    }
+    );
+}
 
-    // ==========================================
-    // LOOP PRINCIPAL WEBXR
-    // ==========================================
+// ==========================================
+// LOOP PRINCIPAL
+// ==========================================
+//
+// IMPORTANTE:
+//
+// FIXAR não interrompe este loop.
+//
+// A atualização dos controladores,
+// do painel e do WebXR permanece ativa.
+// ==========================================
 
-    function animate() {
+function animate() {
 
-      renderer.setAnimationLoop(loop);
-    }
+    renderer.setAnimationLoop(loop);
+}
 
-    function loop() {
+function loop() {
 
-      // A atualização do WebXR continua ativa
-      // mesmo com imageFixed = true.
-
-      ThreeMeshUI.update();
-
-      if (modePanel) {
+    if (modePanel) {
         modePanel.updateMatrixWorld(true);
-      }
+    }
 
-      updateInput();
+    updateInput();
 
-      renderer.render(
+    renderer.render(
         scene,
         camera
-      );
+    );
+}
+
+// ==========================================
+// LEITURA DOS CONTROLADORES
+// ==========================================
+
+function updateInput() {
+
+    const session = renderer.xr.getSession();
+
+    const dt = clock.getDelta();
+
+    hoveredMode = null;
+
+    if (!session) {
+        return;
     }
 
-    // ==========================================
-    // LEITURA DOS CONTROLADORES
-    // ==========================================
+    let hideImagePressed = false;
 
-    function updateInput() {
+    const sources = session.inputSources;
 
-      const session =
-        renderer.xr.getSession();
-
-      const dt = clock.getDelta();
-
-      hoveredMode = null;
-
-      if (!session) {
-        return;
-      }
-
-      let hideImagePressed = false;
-
-      const sources = session.inputSources;
-
-      for (let i = 0; i < sources.length; i++) {
+    for (let i = 0; i < sources.length; i++) {
 
         const gamepad = sources[i].gamepad;
 
         if (
-          !gamepad ||
-          gamepad.mapping !== "xr-standard"
+            !gamepad ||
+            gamepad.mapping !== "xr-standard"
         ) {
-          continue;
+            continue;
         }
 
         const controller =
-          renderer.xr.getController(i);
+            renderer.xr.getController(i);
 
-        const trigger =
-          gamepad.buttons[0];
-
-        const axButton =
-          gamepad.buttons[4];
+        const trigger = gamepad.buttons[0];
+        const axButton = gamepad.buttons[4];
 
         const triggerPressed = Boolean(
-          trigger && trigger.pressed
+            trigger && trigger.pressed
         );
 
         const justPressed =
-          triggerPressed &&
-          !previousTriggerPressed[i];
+            triggerPressed &&
+            !previousTriggerPressed[i];
 
         const overPanel =
-          isPointerOverModePanel(controller);
+            isPointerOverModePanel(controller);
 
         const hoveredButton =
-          getHoveredModeButton(controller);
+            getHoveredModeButton(controller);
 
         if (hoveredButton) {
-          hoveredMode = hoveredButton.mode;
+            hoveredMode = hoveredButton.mode;
         }
 
-        // ====================================
+        // ==================================
         // FIXAR / DESAFIXAR
-        // ====================================
+        // ==================================
+        //
+        // Esta ação modifica somente
+        // o estado de bloqueio da imagem.
+        //
+        // Não desativa controladores.
+        // Não desativa o painel.
+        // Não interrompe o WebXR.
+        // ==================================
 
         if (
-          justPressed &&
-          hoveredButton
+            justPressed &&
+            hoveredButton
         ) {
 
-          if (hoveredButton.mode === "fix") {
+            if (hoveredButton.mode === "fix") {
 
-            imageFixed = !imageFixed;
+                imageFixed = !imageFixed;
 
-            console.log(
-              imageFixed
-                ? "POITA: IMAGEM FIXADA"
-                : "POITA: IMAGEM DESAFIXADA"
-            );
+                console.log(
+                    imageFixed
+                        ? "POITA: IMAGEM FIXADA"
+                        : "POITA: IMAGEM DESAFIXADA"
+                );
+            }
 
-          } else if (!imageFixed) {
+            else if (!imageFixed) {
 
-            currentMode = hoveredButton.mode;
+                currentMode =
+                    hoveredButton.mode;
 
-            console.log(
-              "POITA modo:",
-              currentMode
-            );
-          }
+                console.log(
+                    "POITA modo:",
+                    currentMode
+                );
+            }
         }
 
-        // ====================================
+        // ==================================
         // CONTROLES ANALÓGICOS
-        // ====================================
+        // ==================================
 
         if (
-          !imageFixed &&
-          gamepad.axes.length >= 4
+            !imageFixed &&
+            gamepad.axes.length >= 4
         ) {
 
-          const horizontal =
-            gamepad.axes[2];
+            const horizontal =
+                gamepad.axes[2];
 
-          const vertical =
-            gamepad.axes[3];
+            const vertical =
+                gamepad.axes[3];
 
-          if (currentMode === "scale") {
+            // ESCALA E OPACIDADE
 
-            if (vertical > 0.7) {
-              incrementScale(-dt);
+            if (currentMode === "scale") {
+
+                if (vertical > 0.7) {
+
+                    incrementScale(-dt);
+                }
+
+                else if (vertical < -0.7) {
+
+                    incrementScale(dt);
+                }
+
+                if (horizontal > 0.7) {
+
+                    incrementOpacity(dt);
+                }
+
+                else if (horizontal < -0.7) {
+
+                    incrementOpacity(-dt);
+                }
             }
 
-            else if (vertical < -0.7) {
-              incrementScale(dt);
+            // EIXO X
+
+            else if (currentMode === "x") {
+
+                if (horizontal > 0.25) {
+
+                    moveImage("x", dt);
+                }
+
+                else if (horizontal < -0.25) {
+
+                    moveImage("x", -dt);
+                }
             }
 
-            if (horizontal > 0.7) {
-              incrementOpacity(dt);
+            // EIXO Y
+
+            else if (currentMode === "y") {
+
+                if (vertical < -0.25) {
+
+                    moveImage("y", dt);
+                }
+
+                else if (vertical > 0.25) {
+
+                    moveImage("y", -dt);
+                }
             }
 
-            else if (horizontal < -0.7) {
-              incrementOpacity(-dt);
+            // EIXO Z
+
+            else if (currentMode === "z") {
+
+                if (vertical < -0.25) {
+
+                    moveImage("z", -dt);
+                }
+
+                else if (vertical > 0.25) {
+
+                    moveImage("z", dt);
+                }
             }
-          }
-
-          else if (currentMode === "x") {
-
-            if (horizontal > 0.25) {
-              moveImage("x", dt);
-            }
-
-            else if (horizontal < -0.25) {
-              moveImage("x", -dt);
-            }
-          }
-
-          else if (currentMode === "y") {
-
-            if (vertical < -0.25) {
-              moveImage("y", dt);
-            }
-
-            else if (vertical > 0.25) {
-              moveImage("y", -dt);
-            }
-          }
-
-          else if (currentMode === "z") {
-
-            if (vertical < -0.25) {
-              moveImage("z", -dt);
-            }
-
-            else if (vertical > 0.25) {
-              moveImage("z", dt);
-            }
-          }
         }
 
-        // ====================================
+        // ==================================
         // REPOSICIONAMENTO PELO GATILHO
-        // ====================================
+        // ==================================
         //
-        // O gatilho não reposiciona a imagem
-        // quando ela está fixada.
+        // Somente funciona quando:
         //
-        // O painel permanece independente.
-        // ====================================
+        // 1. A imagem não está fixada.
+        // 2. O controlador não aponta
+        //    para o painel.
+        // ==================================
 
         if (
-          !imageFixed &&
-          !overPanel &&
-          triggerPressed &&
-          group
+            !imageFixed &&
+            !overPanel &&
+            triggerPressed &&
+            group
         ) {
 
-          controller.updateMatrixWorld(true);
+            controller.updateMatrixWorld(true);
 
-          const offset =
-            controller.localToWorld(
-              new THREE.Vector3(
-                0,
-                0,
-                -0.105
-              )
+            const offset =
+                controller.localToWorld(
+                    new THREE.Vector3(
+                        0,
+                        0,
+                        -0.105
+                    )
+                );
+
+            group.position.copy(offset);
+
+            const worldQuaternion =
+                new THREE.Quaternion();
+
+            controller.getWorldQuaternion(
+                worldQuaternion
             );
 
-          group.position.copy(offset);
-
-          const worldQuaternion =
-            new THREE.Quaternion();
-
-          controller.getWorldQuaternion(
-            worldQuaternion
-          );
-
-          group.setRotationFromQuaternion(
-            worldQuaternion
-          );
+            group.setRotationFromQuaternion(
+                worldQuaternion
+            );
         }
 
         previousTriggerPressed[i] =
-          triggerPressed;
+            triggerPressed;
 
         if (
-          axButton &&
-          axButton.pressed
+            axButton &&
+            axButton.pressed
         ) {
-          hideImagePressed = true;
+
+            hideImagePressed = true;
         }
-      }
+    }
 
-      // Atualiza os botões sem recriar
-      // propriedades desnecessariamente.
+    // Atualização visual independente
 
-      updateModeButtonVisuals();
+    updateModeButtonVisuals();
 
-      // ====================================
-      // MOSTRAR / OCULTAR IMAGEM
-      // ====================================
+    // ==================================
+    // MOSTRAR / OCULTAR IMAGEM
+    // ==================================
 
-      if (
+    if (
         !hideImagePressed &&
         previousDidPressHideImage &&
         imagePlane
-      ) {
+    ) {
 
         imagePlane.visible =
-          !imagePlane.visible;
-      }
-
-      previousDidPressHideImage =
-        hideImagePressed;
+            !imagePlane.visible;
     }
 
-  </script>
+    previousDidPressHideImage =
+        hideImagePressed;
+}
 
-  <!-- ===================================== -->
-  <!-- CONTAINER DE RENDERIZAÇÃO -->
-  <!-- ===================================== -->
+</script>
 
-  <div id="container"></div>
+<!-- ====================================== -->
+<!-- CONTAINER WEBGL / WEBXR -->
+<!-- ====================================== -->
 
-  <input
+<div id="container"></div>
+
+<input
     id="imageFileInput"
     type="file"
     accept="image/*"
     style="display:none;"
-  >
+>
 
-  <!-- ===================================== -->
-  <!-- TELA INICIAL -->
-  <!-- ===================================== -->
+<!-- ====================================== -->
+<!-- TELA INICIAL -->
+<!-- ====================================== -->
 
-  <div
+<div
     id="poitaWelcome"
     class="poitaScreen"
-  >
+>
     <div class="poitaCard">
 
-      <div class="poitaLogo">
-        POITA
-      </div>
+        <div class="poitaLogo">
+            POITA
+        </div>
 
-      <div class="poitaSubtitle">
-        MURALLOCK SYSTEM
-      </div>
+        <div class="poitaSubtitle">
+            MURALLOCK SYSTEM
+        </div>
 
-      <a
-        href="#"
-        id="enterPoitaLink"
-        class="poitaButton"
-      >
-        ENTRAR
-      </a>
+        <a
+            href="#"
+            id="enterPoitaLink"
+            class="poitaButton"
+        >
+            ENTRAR
+        </a>
 
     </div>
-  </div>
+</div>
 
-  <!-- ===================================== -->
-  <!-- TELA DE SELEÇÃO DA IMAGEM -->
-  <!-- ===================================== -->
+<!-- ====================================== -->
+<!-- TELA DE SELEÇÃO DE IMAGEM -->
+<!-- ====================================== -->
 
-  <div
+<div
     id="poitaImageScreen"
     class="poitaScreen poitaHidden"
-  >
+>
     <div class="poitaCard">
 
-      <div class="poitaLogo">
-        POITA
-      </div>
+        <div class="poitaLogo">
+            POITA
+        </div>
 
-      <div class="poitaSubtitle">
-        MURALLOCK SYSTEM
-      </div>
+        <div class="poitaSubtitle">
+            MURALLOCK SYSTEM
+        </div>
 
-      <a
-        href="#"
-        id="localImageLink"
-        class="poitaButton"
-      >
-        ABRIR IMAGEM
-      </a>
+        <a
+            href="#"
+            id="localImageLink"
+            class="poitaButton"
+        >
+            ABRIR IMAGEM
+        </a>
 
     </div>
-  </div>
+</div>
 
-  <!-- ===================================== -->
-  <!-- TELA DE CONFIRMAÇÃO -->
-  <!-- ===================================== -->
+<!-- ====================================== -->
+<!-- TELA DE CONFIRMAÇÃO -->
+<!-- ====================================== -->
 
-  <div
+<div
     id="poitaReadyScreen"
     class="poitaScreen poitaHidden"
-  >
+>
     <div class="poitaCard">
 
-      <div class="poitaLogo">
-        POITA
-      </div>
+        <div class="poitaLogo">
+            POITA
+        </div>
 
-      <div class="poitaSubtitle">
-        MURALLOCK SYSTEM
-      </div>
+        <div class="poitaSubtitle">
+            MURALLOCK SYSTEM
+        </div>
 
-      <div class="poitaPreview">
-        <img
-          id="poitaImagePreview"
-          alt="Imagem selecionada"
+        <div class="poitaPreview">
+
+            <img
+                id="poitaImagePreview"
+                alt="Imagem selecionada"
+            >
+
+        </div>
+
+        <div class="poitaStatus">
+            IMAGEM CARREGADA
+        </div>
+
+        <a
+            href="#"
+            id="startPoitaLink"
+            class="poitaButton"
         >
-      </div>
+            INICIAR
+        </a>
 
-      <div class="poitaStatus">
-        IMAGEM CARREGADA
-      </div>
-
-      <a
-        href="#"
-        id="startPoitaLink"
-        class="poitaButton"
-      >
-        INICIAR
-      </a>
-
-      <a
-        href="#"
-        id="changePoitaImageLink"
-        class="poitaSecondaryButton"
-      >
-        TROCAR IMAGEM
-      </a>
+        <a
+            href="#"
+            id="changePoitaImageLink"
+            class="poitaSecondaryButton"
+        >
+            TROCAR IMAGEM
+        </a>
 
     </div>
-  </div>
+</div>
 
 </body>
 </html>
