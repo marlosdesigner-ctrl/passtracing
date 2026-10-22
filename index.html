@@ -2,1598 +2,1431 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>POITA - Muralock System</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POITA - Muralock System</title>
 
-<style>
-body {
-    margin: 0;
-    background: #000;
-}
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      font-family: Arial, sans-serif;
+    }
 
-.poitaScreen {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #111418;
-    font-family: Arial, sans-serif;
-    z-index: 10;
-}
+    .poitaScreen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #111418;
+      z-index: 10;
+    }
 
-.poitaCard {
-    text-align: center;
-    color: white;
-}
+    .poitaCard {
+      text-align: center;
+      color: #fff;
+    }
 
-.poitaLogo {
-    font-size: 52px;
-    font-weight: 700;
-    letter-spacing: 8px;
-    margin-bottom: 6px;
-}
+    .poitaLogo {
+      font-size: 52px;
+      font-weight: 700;
+      letter-spacing: 8px;
+      margin-bottom: 6px;
+    }
 
-.poitaSubtitle {
-    font-size: 13px;
-    letter-spacing: 5px;
-    opacity: .65;
-    margin-bottom: 45px;
-}
+    .poitaSubtitle {
+      font-size: 13px;
+      letter-spacing: 5px;
+      opacity: 0.65;
+      margin-bottom: 45px;
+    }
 
-.poitaButton {
-    display: inline-block;
-    min-width: 180px;
-    padding: 14px 28px;
-    border: 1px solid rgba(255,255,255,.35);
-    border-radius: 6px;
-    color: white;
-    text-decoration: none;
-    font-size: 14px;
-    letter-spacing: 3px;
-    cursor: pointer;
-}
+    .poitaButton {
+      display: inline-block;
+      min-width: 180px;
+      padding: 14px 28px;
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 6px;
+      color: #fff;
+      text-decoration: none;
+      font-size: 14px;
+      letter-spacing: 3px;
+      cursor: pointer;
+    }
 
-.poitaButton:hover {
-    background: rgba(255,255,255,.08);
-}
+    .poitaButton:hover {
+      background: rgba(255,255,255,0.08);
+    }
 
-.poitaHidden {
-    display: none;
-}
+    .poitaHidden {
+      display: none;
+    }
 
-.poitaPreview {
-    width: 260px;
-    height: 160px;
-    margin: 0 auto 18px;
-    border: 1px solid rgba(255,255,255,.2);
-    border-radius: 8px;
-    overflow: hidden;
-    background: #090b0d;
-}
+    .poitaPreview {
+      width: 260px;
+      height: 160px;
+      margin: 0 auto 18px;
+      border: 1px solid rgba(255,255,255,0.20);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #090b0d;
+    }
 
-.poitaPreview img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
+    .poitaPreview img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
 
-.poitaStatus {
-    margin-bottom: 28px;
-    font-size: 11px;
-    letter-spacing: 3px;
-    opacity: .55;
-}
+    .poitaStatus {
+      margin-bottom: 28px;
+      font-size: 11px;
+      letter-spacing: 3px;
+      opacity: 0.55;
+    }
 
-.poitaSecondaryButton {
-    display: block;
-    margin: 14px auto 0;
-    color: rgba(255,255,255,.55);
-    text-decoration: none;
-    font-size: 11px;
-    letter-spacing: 2px;
-    cursor: pointer;
-}
-</style>
+    .poitaSecondaryButton {
+      display: block;
+      margin: 14px auto 0;
+      color: rgba(255,255,255,0.55);
+      text-decoration: none;
+      font-size: 11px;
+      letter-spacing: 2px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 
 <body>
 
-<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+  <script async
+    src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js">
+  </script>
 
-<script type="importmap">
-{
+  <script type="importmap">
+  {
     "imports": {
-        "three": "https://unpkg.com/three@0.147.0/build/three.module.js",
-        "three/addons/": "https://unpkg.com/three@0.147.0/examples/jsm/",
-        "three-mesh-ui": "https://unpkg.com/three-mesh-ui@6.5.2/build/three-mesh-ui.module.js"
+      "three": "https://unpkg.com/three@0.147.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.147.0/examples/jsm/",
+      "three-mesh-ui": "https://unpkg.com/three-mesh-ui@6.5.2/build/three-mesh-ui.module.js"
     }
-}
-</script>
+  }
+  </script>
 
-<script type="x-shader/x-vertex" id="vertexshader">
-varying vec2 vUv;
+  <!-- SHADER DE VÉRTICES -->
 
-void main() {
-    vUv = uv;
-    gl_Position =
+  <script type="x-shader/x-vertex" id="vertexshader">
+    varying vec2 vUv;
+
+    void main() {
+      vUv = uv;
+      gl_Position =
         projectionMatrix *
         modelViewMatrix *
         vec4(position, 1.0);
-}
-</script>
+    }
+  </script>
 
-<script type="x-shader/x-fragment" id="fragmentshader">
-uniform sampler2D colorTexture;
-uniform float opacity;
+  <!-- SHADER DE FRAGMENTOS -->
 
-float stepSize = 2.0;
-varying vec2 vUv;
+  <script type="x-shader/x-fragment" id="fragmentshader">
+    uniform sampler2D colorTexture;
+    uniform float opacity;
 
-float intensity(in vec4 color) {
-    return sqrt(
+    float stepSize = 2.0;
+    varying vec2 vUv;
+
+    float intensity(in vec4 color) {
+      return sqrt(
         color.x * color.x +
         color.y * color.y +
         color.z * color.z
-    );
-}
+      );
+    }
 
-void main() {
-    vec2 uv = vUv;
+    void main() {
+      vec2 uv = vUv;
 
-    ivec2 imageSize = textureSize(colorTexture, 0);
+      ivec2 imageSize = textureSize(colorTexture, 0);
 
-    vec2 step = vec2(
+      vec2 step = vec2(
         stepSize / float(imageSize.x),
         stepSize / float(imageSize.y)
-    );
+      );
 
-    float topLeft = intensity(
+      float topLeft = intensity(
         texture2D(colorTexture, uv + vec2(-step.x, step.y))
-    );
+      );
 
-    float left = intensity(
+      float left = intensity(
         texture2D(colorTexture, uv + vec2(-step.x, 0.0))
-    );
+      );
 
-    float bottomLeft = intensity(
+      float bottomLeft = intensity(
         texture2D(colorTexture, uv + vec2(-step.x, -step.y))
-    );
+      );
 
-    float top = intensity(
+      float top = intensity(
         texture2D(colorTexture, uv + vec2(0.0, step.y))
-    );
+      );
 
-    float bottom = intensity(
+      float bottom = intensity(
         texture2D(colorTexture, uv + vec2(0.0, -step.y))
-    );
+      );
 
-    float topRight = intensity(
+      float topRight = intensity(
         texture2D(colorTexture, uv + vec2(step.x, step.y))
-    );
+      );
 
-    float right = intensity(
+      float right = intensity(
         texture2D(colorTexture, uv + vec2(step.x, 0.0))
-    );
+      );
 
-    float bottomRight = intensity(
+      float bottomRight = intensity(
         texture2D(colorTexture, uv + vec2(step.x, -step.y))
-    );
+      );
 
-    float horizontal =
+      float horizontal =
         topLeft + 2.0 * left + bottomLeft -
         topRight - 2.0 * right - bottomRight;
 
-    float vertical =
+      float vertical =
         -topLeft - 2.0 * top - topRight +
         bottomLeft + 2.0 * bottom + bottomRight;
 
-    float sobelResult = sqrt(
+      float sobelResult = sqrt(
         horizontal * horizontal +
         vertical * vertical
-    );
+      );
 
-    vec4 sobelColor = vec4(
+      vec4 sobelColor = vec4(
         1.0 - sobelResult,
         1.0 - sobelResult,
         1.0 - sobelResult,
         sobelResult
-    );
+      );
 
-    vec4 currentColor = texture2D(colorTexture, uv);
+      vec4 currentColor = texture2D(colorTexture, uv);
 
-    float smoothOpacity = smoothstep(
-        0.0,
-        0.3,
-        opacity
-    );
+      float smoothOpacity =
+        smoothstep(0.0, 0.3, opacity);
 
-    gl_FragColor = vec4(
-        currentColor.x * smoothOpacity +
-            (1.0 - smoothOpacity) * sobelColor.x,
+      gl_FragColor = vec4(
+        currentColor.rgb * smoothOpacity +
+        (1.0 - smoothOpacity) * sobelColor.rgb,
 
-        currentColor.y * smoothOpacity +
-            (1.0 - smoothOpacity) * sobelColor.y,
+        currentColor.a * min(opacity, smoothOpacity) +
+        (1.0 - smoothOpacity) * sobelColor.a
+      );
+    }
+  </script>
 
-        currentColor.z * smoothOpacity +
-            (1.0 - smoothOpacity) * sobelColor.z,
+  <script type="module">
 
-        currentColor.w * min(opacity, smoothOpacity) +
-            (1.0 - smoothOpacity) * sobelColor.w
-    );
-}
-</script>
+    import * as THREE from "three";
 
-<script type="module">
+    import { OrbitControls }
+      from "three/addons/controls/OrbitControls.js";
 
-import * as THREE from 'three';
+    import { ARButton }
+      from "three/addons/webxr/ARButton.js";
 
-import {
-    OrbitControls
-} from 'three/addons/controls/OrbitControls.js';
+    import ThreeMeshUI from "three-mesh-ui";
 
-import {
-    ARButton
-} from 'three/addons/webxr/ARButton.js';
+    // ==========================================
+    // VARIÁVEIS PRINCIPAIS
+    // ==========================================
 
-import ThreeMeshUI from 'three-mesh-ui';
+    let container;
+    let camera;
+    let scene;
+    let renderer;
 
-// ==========================================
-// VARIÁVEIS GERAIS
-// ==========================================
+    let controller1;
+    let controller2;
+    let clock;
 
-let container;
-let camera;
-let scene;
-let renderer;
+    let group = null;
+    let imagePlane = null;
 
-let controller1;
-let controller2;
-let clock;
+    let currentOpacity = 0.75;
+    let currentScale = 1.0;
 
-let group = null;
-let imagePlane = null;
+    let previousDidPressHideImage = false;
 
-let currentOpacity = 0.75;
-let currentScale = 1.0;
+    let currentMode = "scale";
 
-let currentMode = "scale";
+    // Estado exclusivo da imagem
+    let imageFixed = false;
 
-// ESTÁGIO 1 - FIXAÇÃO
-let imageFixed = false;
+    let modePanel = null;
+    let modeButtons = [];
 
-// ESTÁGIO 2 - ROTAÇÃO
-let rotationAxis = "x";
-const rotationSpeed = 0.8;
+    let menuHitArea = null;
+    let hoveredMode = null;
 
-let modePanel = null;
-let modeButtons = [];
-let menuHitArea = null;
-let hoveredMode = null;
+    const uiRaycaster = new THREE.Raycaster();
+    const uiRayMatrix = new THREE.Matrix4();
 
-let previousDidPressHideImage = false;
-let previousTriggerPressed = [false, false];
+    const previousTriggerPressed = [false, false];
 
-const uiRaycaster = new THREE.Raycaster();
-const uiRayMatrix = new THREE.Matrix4();
+    // ==========================================
+    // INICIALIZAÇÃO
+    // ==========================================
 
-init();
-animate();
+    init();
+    animate();
 
-// ==========================================
-// INICIALIZAÇÃO
-// ==========================================
+    function init() {
 
-function init() {
+      container = document.getElementById("container");
 
-    container = document.getElementById("container");
+      scene = new THREE.Scene();
 
-    scene = new THREE.Scene();
-
-    camera = new THREE.PerspectiveCamera(
+      camera = new THREE.PerspectiveCamera(
         50,
         window.innerWidth / window.innerHeight,
         0.1,
         10
-    );
+      );
 
-    camera.position.set(0, 0, 1);
+      camera.position.set(0, 0, 1);
 
-    const controls = new OrbitControls(
+      const controls = new OrbitControls(
         camera,
         container
-    );
+      );
 
-    controls.minDistance = 0;
-    controls.maxDistance = 8;
+      controls.minDistance = 0;
+      controls.maxDistance = 8;
 
-    clock = new THREE.Clock();
+      clock = new THREE.Clock();
 
-    renderer = new THREE.WebGLRenderer({
+      renderer = new THREE.WebGLRenderer({
         antialias: true,
         alpha: true
-    });
+      });
 
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(
+      renderer.setPixelRatio(window.devicePixelRatio);
+
+      renderer.setSize(
         window.innerWidth,
         window.innerHeight
-    );
+      );
 
-    renderer.outputEncoding = THREE.sRGBEncoding;
-    renderer.localClippingEnabled = true;
-    renderer.xr.enabled = true;
-    renderer.xr.setFoveation(0);
+      renderer.outputEncoding = THREE.sRGBEncoding;
+      renderer.localClippingEnabled = true;
 
-    container.appendChild(renderer.domElement);
+      renderer.xr.enabled = true;
+      renderer.xr.setFoveation(0);
 
-    // CONTROLES QUEST 2
+      container.appendChild(renderer.domElement);
 
-    controller1 = renderer.xr.getController(0);
-    controller2 = renderer.xr.getController(1);
+      // ========================================
+      // CONTROLADORES
+      // ========================================
 
-    scene.add(controller1);
-    scene.add(controller2);
+      controller1 = renderer.xr.getController(0);
+      controller2 = renderer.xr.getController(1);
 
-    const rayGeometry =
+      scene.add(controller1);
+      scene.add(controller2);
+
+      const rayGeometry =
         new THREE.BufferGeometry().setFromPoints([
-            new THREE.Vector3(0, 0, 0),
-            new THREE.Vector3(0, 0, -1)
+          new THREE.Vector3(0, 0, 0),
+          new THREE.Vector3(0, 0, -1)
         ]);
 
-    const rayMaterial = new THREE.LineBasicMaterial({
-        color: 0xffffff
-    });
+      const rayMaterial =
+        new THREE.LineBasicMaterial({
+          color: 0xffffff
+        });
 
-    const ray1 = new THREE.Line(
+      const ray1 = new THREE.Line(
         rayGeometry,
         rayMaterial
-    );
+      );
 
-    ray1.scale.z = 3;
-    controller1.add(ray1);
+      ray1.scale.z = 3;
+      controller1.add(ray1);
 
-    const ray2 = ray1.clone();
-    controller2.add(ray2);
+      const ray2 = ray1.clone();
+      controller2.add(ray2);
 
-    makeModeUI();
+      // Painel preso ao controlador 1
+      makeModeUI();
 
-    // GRUPO DA IMAGEM
+      // ========================================
+      // GRUPO DA IMAGEM
+      // ========================================
 
-    group = new THREE.Group();
+      group = new THREE.Group();
 
-    group.position.set(0, 0, -0.5);
+      group.position.set(
+        0,
+        0,
+        -0.5
+      );
 
-    scene.add(group);
+      scene.add(group);
 
-    loadTexture(
+      loadTexture(
         group,
         0.25,
         "Images/discovery.jpg"
-    );
+      );
 
-    window.addEventListener(
+      window.addEventListener(
         "resize",
         onWindowResize
-    );
+      );
 
-    // INTERFACE INICIAL
+      // ========================================
+      // TELAS HTML
+      // ========================================
 
-    const welcome =
+      const enterPoitaLink =
+        document.getElementById("enterPoitaLink");
+
+      const poitaWelcome =
         document.getElementById("poitaWelcome");
 
-    const imageScreen =
+      const poitaImageScreen =
         document.getElementById("poitaImageScreen");
 
-    const readyScreen =
+      const poitaReadyScreen =
         document.getElementById("poitaReadyScreen");
 
-    const imageFileInput =
+      const startPoitaLink =
+        document.getElementById("startPoitaLink");
+
+      const localImageLink =
+        document.getElementById("localImageLink");
+
+      const changePoitaImageLink =
+        document.getElementById("changePoitaImageLink");
+
+      const imageFileInput =
         document.getElementById("imageFileInput");
 
-    document.getElementById(
-        "enterPoitaLink"
-    ).onclick = function(event) {
-
+      enterPoitaLink.onclick = function(event) {
         event.preventDefault();
 
-        welcome.classList.add("poitaHidden");
-        imageScreen.classList.remove("poitaHidden");
-    };
+        poitaWelcome.classList.add("poitaHidden");
 
-    document.getElementById(
-        "localImageLink"
-    ).onclick = function(event) {
+        poitaImageScreen.classList.remove(
+          "poitaHidden"
+        );
+      };
 
+      localImageLink.onclick = function(event) {
         event.preventDefault();
 
         imageFileInput.value = "";
         imageFileInput.click();
-    };
+      };
 
-    imageFileInput.onchange = handleLocalImage;
+      imageFileInput.onchange = handleLocalImage;
 
-    document.getElementById(
-        "changePoitaImageLink"
-    ).onclick = function(event) {
-
+      changePoitaImageLink.onclick = function(event) {
         event.preventDefault();
 
         imageFileInput.value = "";
         imageFileInput.click();
-    };
+      };
 
-    document.getElementById(
-        "startPoitaLink"
-    ).onclick = function(event) {
-
+      startPoitaLink.onclick = function(event) {
         event.preventDefault();
 
         const arButton =
-            document.getElementById("ARButton");
+          document.getElementById("ARButton");
 
         if (arButton) {
+          poitaReadyScreen.classList.add(
+            "poitaHidden"
+          );
 
-            readyScreen.classList.add("poitaHidden");
-
-            arButton.click();
+          arButton.click();
         }
-    };
-}
+      };
+    }
 
-// ==========================================
-// PAINEL DE CONTROLE
-// ==========================================
+    // ==========================================
+    // CRIAÇÃO DO PAINEL DE CONTROLE
+    // ==========================================
 
-function makeModeUI() {
+    function makeModeUI() {
 
-    const fontFamily =
+      const fontFamily =
         "https://unpkg.com/three-mesh-ui@6.5.2/examples/assets/Roboto-msdf.json";
 
-    const fontTexture =
+      const fontTexture =
         "https://unpkg.com/three-mesh-ui@6.5.2/examples/assets/Roboto-msdf.png";
 
-    modePanel = new ThreeMeshUI.Block({
-
-        width: 1.22,
+      modePanel = new ThreeMeshUI.Block({
+        width: 0.99,
         height: 0.22,
-
         padding: 0.025,
-
         contentDirection: "column",
         justifyContent: "center",
         alignContent: "center",
-
         borderRadius: 0.025,
-
-        backgroundColor:
-            new THREE.Color(0x20252b),
-
+        backgroundColor: new THREE.Color(0x20252b),
         backgroundOpacity: 0.90,
+        fontFamily,
+        fontTexture
+      });
 
-        fontFamily: fontFamily,
-        fontTexture: fontTexture
-    });
-
-    modePanel.position.set(
+      modePanel.position.set(
         0.15,
         0.10,
         -0.04
-    );
+      );
 
-    modePanel.scale.set(
+      modePanel.scale.set(
         0.27,
         0.27,
         0.27
-    );
+      );
 
-    // ÁREA DE PROTEÇÃO DO MENU
-
-    menuHitArea = new THREE.Mesh(
-
-        new THREE.PlaneGeometry(
-            1.25,
-            0.25
-        ),
-
+      menuHitArea = new THREE.Mesh(
+        new THREE.PlaneGeometry(1.02, 0.25),
         new THREE.MeshBasicMaterial({
-            transparent: true,
-            opacity: 0,
-            side: THREE.DoubleSide,
-            depthWrite: false
+          transparent: true,
+          opacity: 0,
+          side: THREE.DoubleSide,
+          depthWrite: false
         })
-    );
+      );
 
-    menuHitArea.position.z = 0.001;
+      menuHitArea.position.z = 0.001;
 
-    THREE.Object3D.prototype.add.call(
+      THREE.Object3D.prototype.add.call(
         modePanel,
         menuHitArea
-    );
+      );
 
-    const title = new ThreeMeshUI.Text({
-
+      const title = new ThreeMeshUI.Text({
         content: "POITA  •  CONTROLE",
-
         fontSize: 0.032,
+        fontColor: new THREE.Color(0xffffff)
+      });
 
-        fontColor:
-            new THREE.Color(0xffffff)
-    });
-
-    const buttonRow = new ThreeMeshUI.Block({
-
-        width: 1.17,
+      const buttonRow = new ThreeMeshUI.Block({
+        width: 0.94,
         height: 0.10,
-
         margin: 0.015,
-
         contentDirection: "row",
         justifyContent: "center",
         alignContent: "center",
-
         backgroundOpacity: 0
-    });
+      });
 
-    buttonRow.add(
+      buttonRow.add(
+        createModeButton("ESCALA", "scale"),
+        createModeButton("X", "x"),
+        createModeButton("Y", "y"),
+        createModeButton("Z", "z"),
+        createModeButton("FIXAR", "fix")
+      );
 
-        createModeButton(
-            "ESCALA",
-            "scale"
-        ),
+      modePanel.add(title, buttonRow);
 
-        createModeButton(
-            "X",
-            "x"
-        ),
+      controller1.add(modePanel);
 
-        createModeButton(
-            "Y",
-            "y"
-        ),
-
-        createModeButton(
-            "Z",
-            "z"
-        ),
-
-        createModeButton(
-            "ROT X",
-            "rotate"
-        ),
-
-        createModeButton(
-            "FIXAR",
-            "fix"
-        )
-    );
-
-    modePanel.add(
-        title,
-        buttonRow
-    );
-
-    controller1.add(modePanel);
-
-    updateModeButtonVisuals();
-}
-
-// ==========================================
-// CRIAÇÃO DOS BOTÕES
-// ==========================================
-
-function createModeButton(label, mode) {
-
-    let width = 0.155;
-
-    if (mode === "rotate") {
-        width = 0.19;
+      updateModeButtonVisuals();
     }
 
-    if (mode === "fix") {
-        width = 0.22;
-    }
+    // ==========================================
+    // CRIAÇÃO DOS BOTÕES
+    // ==========================================
 
-    const button = new ThreeMeshUI.Block({
+    function createModeButton(label, mode) {
 
-        width: width,
+      const width =
+        mode === "fix" ? 0.22 : 0.155;
+
+      const button = new ThreeMeshUI.Block({
+        width,
         height: 0.075,
-
         margin: 0.008,
-
         justifyContent: "center",
         alignContent: "center",
-
         borderRadius: 0.015,
-
-        backgroundColor:
-            new THREE.Color(0x404750),
-
+        backgroundColor: new THREE.Color(0x404750),
         backgroundOpacity: 1
-    });
+      });
 
-    const fontSize =
-        mode === "fix" || mode === "rotate"
-            ? 0.023
-            : 0.027;
-
-    const labelText = new ThreeMeshUI.Text({
-
+      const labelText = new ThreeMeshUI.Text({
         content: label,
+        fontSize: mode === "fix" ? 0.023 : 0.027,
+        fontColor: new THREE.Color(0xffffff)
+      });
 
-        fontSize: fontSize,
+      button.add(labelText);
 
-        fontColor:
-            new THREE.Color(0xffffff)
-    });
-
-    button.add(labelText);
-
-    const hitArea = new THREE.Mesh(
-
+      const hitArea = new THREE.Mesh(
         new THREE.PlaneGeometry(
-            width + 0.01,
-            0.09
+          width + 0.01,
+          0.09
         ),
-
         new THREE.MeshBasicMaterial({
-            transparent: true,
-            opacity: 0,
-            side: THREE.DoubleSide,
-            depthWrite: false
+          transparent: true,
+          opacity: 0,
+          side: THREE.DoubleSide,
+          depthWrite: false
         })
-    );
+      );
 
-    hitArea.position.z = 0.003;
+      hitArea.position.z = 0.003;
 
-    THREE.Object3D.prototype.add.call(
+      THREE.Object3D.prototype.add.call(
         button,
         hitArea
-    );
+      );
 
-    modeButtons.push({
-
+      modeButtons.push({
         object: button,
-
-        hitArea: hitArea,
-
+        hitArea,
         text: labelText,
+        mode
+      });
 
-        mode: mode,
-
-        displayLabel: label
-    });
-
-    return button;
-}
-
-// ==========================================
-// ATUALIZAÇÃO VISUAL DOS BOTÕES
-// ==========================================
-
-function updateModeButtonVisuals() {
-
-    for (const info of modeButtons) {
-
-        // ROTAÇÃO - EXIBIR EIXO ATUAL
-
-        if (info.mode === "rotate") {
-
-            const desiredLabel =
-                "ROT " + rotationAxis.toUpperCase();
-
-            if (info.displayLabel !== desiredLabel) {
-
-                info.text.set({
-                    content: desiredLabel
-                });
-
-                info.displayLabel = desiredLabel;
-            }
-        }
-
-        // FIXAR / DESAFIXAR
-
-        if (info.mode === "fix") {
-
-            const desiredLabel =
-                imageFixed
-                    ? "DESAFIXAR"
-                    : "FIXAR";
-
-            if (info.displayLabel !== desiredLabel) {
-
-                info.text.set({
-                    content: desiredLabel
-                });
-
-                info.displayLabel = desiredLabel;
-            }
-
-            info.object.set({
-
-                backgroundColor: new THREE.Color(
-                    imageFixed
-                        ? 0x267d59
-                        : 0xff8800
-                ),
-
-                backgroundOpacity: 1
-            });
-
-            continue;
-        }
-
-        // CONTROLES BLOQUEADOS
-
-        if (imageFixed) {
-
-            info.object.set({
-
-                backgroundColor:
-                    new THREE.Color(0x404750),
-
-                backgroundOpacity: 0.25
-            });
-
-            continue;
-        }
-
-        // CONTROLES ATIVOS
-
-        const active =
-            info.mode === currentMode ||
-            info.mode === hoveredMode;
-
-        info.object.set({
-
-            backgroundColor: new THREE.Color(
-                active
-                    ? 0xff8800
-                    : 0x404750
-            ),
-
-            backgroundOpacity: 1
-        });
+      return button;
     }
-}
 
-// ==========================================
-// DETECÇÃO DE APONTAMENTO
-// ==========================================
+    // ==========================================
+    // CORREÇÃO: ATUALIZAÇÃO VISUAL DOS BOTÕES
+    // ==========================================
+    //
+    // As propriedades só são reaplicadas
+    // quando o estado visual realmente muda.
+    //
+    // FIXAR e DESAFIXAR permanecem acessíveis.
+    // ==========================================
 
-function prepareControllerRay(controller) {
+    function updateModeButtonVisuals() {
 
-    controller.updateMatrixWorld(true);
+      for (const info of modeButtons) {
 
-    if (modePanel) {
+        const isFix = info.mode === "fix";
+
+        const label = isFix
+          ? (imageFixed ? "DESAFIXAR" : "FIXAR")
+          : (
+              info.mode === "scale"
+                ? "ESCALA"
+                : info.mode.toUpperCase()
+            );
+
+        const color = isFix
+          ? (imageFixed ? 0x267d59 : 0xff8800)
+          : imageFixed
+            ? 0x404750
+            : (
+                info.mode === currentMode ||
+                info.mode === hoveredMode
+                  ? 0xff8800
+                  : 0x404750
+              );
+
+        const opacity =
+          (!isFix && imageFixed) ? 0.25 : 1;
+
+        if (info.displayLabel !== label) {
+
+          info.text.set({
+            content: label
+          });
+
+          info.displayLabel = label;
+        }
+
+        if (
+          info.lastColor !== color ||
+          info.lastOpacity !== opacity
+        ) {
+
+          info.object.set({
+            backgroundColor: new THREE.Color(color),
+            backgroundOpacity: opacity
+          });
+
+          info.lastColor = color;
+          info.lastOpacity = opacity;
+        }
+      }
+    }
+
+    // ==========================================
+    // DETECÇÃO DOS BOTÕES PELO CONTROLADOR
+    // ==========================================
+
+    function getHoveredModeButton(controller) {
+
+      controller.updateMatrixWorld(true);
+
+      if (modePanel) {
         modePanel.updateMatrixWorld(true);
-    }
+      }
 
-    uiRayMatrix.identity().extractRotation(
+      uiRayMatrix.identity().extractRotation(
         controller.matrixWorld
-    );
+      );
 
-    uiRaycaster.ray.origin.setFromMatrixPosition(
+      uiRaycaster.ray.origin.setFromMatrixPosition(
         controller.matrixWorld
-    );
+      );
 
-    uiRaycaster.ray.direction
+      uiRaycaster.ray.direction
         .set(0, 0, -1)
         .applyMatrix4(uiRayMatrix)
         .normalize();
-}
 
-function getHoveredModeButton(controller) {
+      let closestButton = null;
+      let closestDistance = Infinity;
 
-    prepareControllerRay(controller);
+      for (const buttonInfo of modeButtons) {
 
-    let closestButton = null;
-    let closestDistance = Infinity;
-
-    for (const info of modeButtons) {
-
-        info.hitArea.updateMatrixWorld(true);
+        buttonInfo.hitArea.updateMatrixWorld(true);
 
         const intersections =
-            uiRaycaster.intersectObject(
-                info.hitArea,
-                false
-            );
+          uiRaycaster.intersectObject(
+            buttonInfo.hitArea,
+            false
+          );
 
         if (
-            intersections.length > 0 &&
-            intersections[0].distance < closestDistance
+          intersections.length > 0 &&
+          intersections[0].distance < closestDistance
         ) {
 
-            closestDistance =
-                intersections[0].distance;
+          closestDistance =
+            intersections[0].distance;
 
-            closestButton = info;
+          closestButton = buttonInfo;
         }
-    }
+      }
 
-    if (
+      // Com a imagem fixada, apenas
+      // DESAFIXAR pode receber clique.
+
+      if (
         imageFixed &&
         closestButton &&
         closestButton.mode !== "fix"
-    ) {
+      ) {
         return null;
+      }
+
+      return closestButton;
     }
 
-    return closestButton;
-}
+    function isPointerOverModePanel(controller) {
 
-function isPointerOverModePanel(controller) {
-
-    if (!menuHitArea || !modePanel) {
+      if (!menuHitArea || !modePanel) {
         return false;
-    }
+      }
 
-    prepareControllerRay(controller);
+      controller.updateMatrixWorld(true);
+      modePanel.updateMatrixWorld(true);
+      menuHitArea.updateMatrixWorld(true);
 
-    menuHitArea.updateMatrixWorld(true);
+      uiRayMatrix.identity().extractRotation(
+        controller.matrixWorld
+      );
 
-    const intersections =
+      uiRaycaster.ray.origin.setFromMatrixPosition(
+        controller.matrixWorld
+      );
+
+      uiRaycaster.ray.direction
+        .set(0, 0, -1)
+        .applyMatrix4(uiRayMatrix)
+        .normalize();
+
+      const intersections =
         uiRaycaster.intersectObject(
-            menuHitArea,
-            false
+          menuHitArea,
+          false
         );
 
-    return intersections.length > 0;
-}
-
-// ==========================================
-// SELEÇÃO DA IMAGEM
-// ==========================================
-
-function handleLocalImage(event) {
-
-    const file = event.target.files[0];
-
-    if (!file) {
-        return;
+      return intersections.length > 0;
     }
 
-    if (!file.type.startsWith("image/")) {
+    // ==========================================
+    // ABRIR IMAGEM LOCAL
+    // ==========================================
 
+    function handleLocalImage(event) {
+
+      const file = event.target.files[0];
+
+      if (!file) {
+        return;
+      }
+
+      if (!file.type.startsWith("image/")) {
         alert(
-            "O arquivo selecionado não é uma imagem."
+          "O arquivo selecionado não é uma imagem."
         );
-
         return;
-    }
+      }
 
-    const localImageUrl =
+      const localImageUrl =
         URL.createObjectURL(file);
 
-    document.getElementById(
-        "poitaImagePreview"
-    ).src = localImageUrl;
+      const preview =
+        document.getElementById(
+          "poitaImagePreview"
+        );
 
-    replaceImage(localImageUrl);
+      const imageScreen =
+        document.getElementById(
+          "poitaImageScreen"
+        );
 
-    document.getElementById(
-        "poitaImageScreen"
-    ).classList.add("poitaHidden");
+      const readyScreen =
+        document.getElementById(
+          "poitaReadyScreen"
+        );
 
-    document.getElementById(
-        "poitaReadyScreen"
-    ).classList.remove("poitaHidden");
-}
+      preview.src = localImageUrl;
 
-function replaceImage(url) {
+      replaceImage(localImageUrl);
 
-    if (imagePlane) {
+      imageScreen.classList.add(
+        "poitaHidden"
+      );
+
+      readyScreen.classList.remove(
+        "poitaHidden"
+      );
+    }
+
+    // ==========================================
+    // TROCAR IMAGEM
+    // ==========================================
+
+    function replaceImage(url) {
+
+      if (imagePlane) {
 
         group.remove(imagePlane);
 
         if (imagePlane.geometry) {
-            imagePlane.geometry.dispose();
+          imagePlane.geometry.dispose();
         }
 
         if (imagePlane.material) {
 
-            const uniforms =
-                imagePlane.material.uniforms;
+          const uniforms =
+            imagePlane.material.uniforms;
 
-            if (
-                uniforms &&
-                uniforms.colorTexture
-            ) {
+          if (
+            uniforms &&
+            uniforms.colorTexture &&
+            uniforms.colorTexture.value
+          ) {
+            uniforms.colorTexture.value.dispose();
+          }
 
-                const oldTexture =
-                    uniforms.colorTexture.value;
-
-                if (oldTexture) {
-                    oldTexture.dispose();
-                }
-            }
-
-            imagePlane.material.dispose();
+          imagePlane.material.dispose();
         }
 
         imagePlane = null;
-    }
+      }
 
-    loadTexture(
+      loadTexture(
         group,
         0.25,
         url
-    );
-}
+      );
+    }
 
-// ==========================================
-// TEXTURA E SHADER
-// ==========================================
+    // ==========================================
+    // CARREGAR TEXTURA
+    // ==========================================
 
-function loadTexture(container, length, url) {
+    function loadTexture(target, length, url) {
 
-    const loader = new THREE.TextureLoader();
+      const loader = new THREE.TextureLoader();
 
-    loader.load(
+      loader.load(
 
         url,
 
         function(texture) {
 
-            if (
-                document.getElementById("ARButton") === null
-            ) {
+          if (
+            document.getElementById("ARButton") === null
+          ) {
 
-                document.body.appendChild(
-                    ARButton.createButton(renderer)
-                );
-            }
+            document.body.appendChild(
+              ARButton.createButton(renderer)
+            );
+          }
 
-            const originalWidth =
-                texture.image.width;
+          const originalWidth =
+            texture.image.width;
 
-            const originalHeight =
-                texture.image.height;
+          const originalHeight =
+            texture.image.height;
 
-            const max = Math.max(
-                originalWidth,
-                originalHeight
+          const max = Math.max(
+            originalWidth,
+            originalHeight
+          );
+
+          const width =
+            (originalWidth / max) * length;
+
+          const height =
+            (originalHeight / max) * length;
+
+          const geometry =
+            new THREE.PlaneGeometry(
+              width,
+              height
             );
 
-            const width =
-                (originalWidth / max) * length;
+          texture.generateMipmaps = false;
 
-            const height =
-                (originalHeight / max) * length;
+          const sobelMaterial =
+            new THREE.ShaderMaterial({
 
-            const geometry =
-                new THREE.PlaneGeometry(
-                    width,
-                    height
-                );
+              transparent: true,
 
-            texture.generateMipmaps = false;
+              side: THREE.DoubleSide,
 
-            const sobelMaterial =
-                new THREE.ShaderMaterial({
+              uniforms: {
+                colorTexture: {
+                  value: texture
+                },
 
-                    transparent: true,
+                opacity: {
+                  value: currentOpacity
+                }
+              },
 
-                    side: THREE.DoubleSide,
+              vertexShader:
+                document.getElementById(
+                  "vertexshader"
+                ).textContent,
 
-                    uniforms: {
+              fragmentShader:
+                document.getElementById(
+                  "fragmentshader"
+                ).textContent
+            });
 
-                        colorTexture: {
-                            value: texture
-                        },
+          imagePlane = new THREE.Mesh(
+            geometry,
+            sobelMaterial
+          );
 
-                        opacity: {
-                            value: currentOpacity
-                        }
-                    },
-
-                    vertexShader:
-                        document.getElementById(
-                            "vertexshader"
-                        ).textContent,
-
-                    fragmentShader:
-                        document.getElementById(
-                            "fragmentshader"
-                        ).textContent
-                });
-
-            imagePlane = new THREE.Mesh(
-                geometry,
-                sobelMaterial
-            );
-
-            container.add(imagePlane);
+          target.add(imagePlane);
         },
 
         undefined,
 
         function(error) {
 
-            console.error(
-                "POITA: erro ao carregar imagem",
-                error
-            );
+          console.error(
+            "Erro ao carregar imagem:",
+            error
+          );
 
-            alert(
-                "Não foi possível carregar a imagem."
-            );
+          alert(
+            "Não foi possível carregar a imagem."
+          );
         }
-    );
-}
-
-// ==========================================
-// OPACIDADE
-// ==========================================
-
-function incrementOpacity(delta) {
-
-    if (imageFixed) {
-        return;
+      );
     }
 
-    currentOpacity += delta;
+    // ==========================================
+    // OPACIDADE
+    // ==========================================
 
-    currentOpacity = Math.min(
+    function incrementOpacity(delta) {
+
+      if (imageFixed) return;
+
+      currentOpacity += delta;
+
+      currentOpacity = Math.min(
         Math.max(currentOpacity, 0),
         1
-    );
+      );
 
-    if (imagePlane) {
+      if (imagePlane) {
 
-        imagePlane.material.uniforms.opacity.value =
+        imagePlane.material
+          .uniforms.opacity.value =
             currentOpacity;
-    }
-}
-
-// ==========================================
-// ESCALA
-// ==========================================
-
-function incrementScale(delta) {
-
-    if (imageFixed) {
-        return;
+      }
     }
 
-    const scaleSpeed =
-        Math.max(currentScale, 1);
+    // ==========================================
+    // ESCALA
+    // ==========================================
 
-    currentScale +=
+    function incrementScale(delta) {
+
+      if (imageFixed) return;
+
+      const scaleSpeed = Math.max(
+        currentScale,
+        1
+      );
+
+      currentScale +=
         delta * scaleSpeed;
 
-    currentScale = Math.min(
+      currentScale = Math.min(
         Math.max(currentScale, 0),
         40
-    );
+      );
 
-    if (group) {
+      if (group) {
 
         group.scale.set(
-            currentScale,
-            currentScale,
-            currentScale
+          currentScale,
+          currentScale,
+          currentScale
         );
+      }
     }
-}
 
-// ==========================================
-// POSICIONAMENTO X / Y / Z
-// ==========================================
+    // ==========================================
+    // POSICIONAMENTO X / Y / Z
+    // ==========================================
 
-function moveImage(axis, delta) {
+    function moveImage(axis, delta) {
 
-    if (imageFixed || !group) {
+      if (imageFixed || !group) {
         return;
-    }
+      }
 
-    const distance = delta * 0.35;
+      const moveSpeed = 0.35;
 
-    if (axis === "x") {
+      const distance =
+        delta * moveSpeed;
 
+      if (axis === "x") {
         group.translateX(distance);
+      }
 
-    } else if (axis === "y") {
-
+      else if (axis === "y") {
         group.translateY(distance);
+      }
 
-    } else if (axis === "z") {
-
+      else if (axis === "z") {
         group.translateZ(distance);
-    }
-}
-
-// ==========================================
-// ROTAÇÃO X / Y / Z
-// ==========================================
-
-function rotateImage(delta) {
-
-    if (imageFixed || !group) {
-        return;
+      }
     }
 
-    const angle = delta * rotationSpeed;
+    // ==========================================
+    // REDIMENSIONAMENTO DA JANELA
+    // ==========================================
 
-    if (rotationAxis === "x") {
+    function onWindowResize() {
 
-        group.rotateX(angle);
-
-    } else if (rotationAxis === "y") {
-
-        group.rotateY(angle);
-
-    } else if (rotationAxis === "z") {
-
-        group.rotateZ(angle);
-    }
-}
-
-// ==========================================
-// ALTERNÂNCIA DOS EIXOS DE ROTAÇÃO
-// ==========================================
-
-function selectRotationMode() {
-
-    if (currentMode !== "rotate") {
-
-        // PRIMEIRO TOQUE: ROTAÇÃO X
-
-        rotationAxis = "x";
-
-    } else {
-
-        // TOQUES SEGUINTES: X -> Y -> Z -> X
-
-        if (rotationAxis === "x") {
-
-            rotationAxis = "y";
-
-        } else if (rotationAxis === "y") {
-
-            rotationAxis = "z";
-
-        } else {
-
-            rotationAxis = "x";
-        }
-    }
-
-    currentMode = "rotate";
-
-    console.log(
-        "POITA: ROTAÇÃO",
-        rotationAxis.toUpperCase()
-    );
-}
-
-// ==========================================
-// REDIMENSIONAMENTO DA TELA
-// ==========================================
-
-function onWindowResize() {
-
-    camera.aspect =
+      camera.aspect =
         window.innerWidth /
         window.innerHeight;
 
-    camera.updateProjectionMatrix();
+      camera.updateProjectionMatrix();
 
-    renderer.setSize(
+      renderer.setSize(
         window.innerWidth,
         window.innerHeight
-    );
-}
-
-// ==========================================
-// ANIMAÇÃO
-// ==========================================
-
-function animate() {
-
-    renderer.setAnimationLoop(loop);
-}
-
-function loop() {
-
-    ThreeMeshUI.update();
-
-    if (modePanel) {
-
-        modePanel.updateMatrixWorld(true);
+      );
     }
 
-    updateInput();
+    // ==========================================
+    // LOOP PRINCIPAL WEBXR
+    // ==========================================
 
-    renderer.render(
+    function animate() {
+
+      renderer.setAnimationLoop(loop);
+    }
+
+    function loop() {
+
+      // A atualização do WebXR continua ativa
+      // mesmo com imageFixed = true.
+
+      ThreeMeshUI.update();
+
+      if (modePanel) {
+        modePanel.updateMatrixWorld(true);
+      }
+
+      updateInput();
+
+      renderer.render(
         scene,
         camera
-    );
-}
-
-// ==========================================
-// CONTROLE PRINCIPAL QUEST 2
-// ==========================================
-
-function updateInput() {
-
-    const session =
-        renderer.xr.getSession();
-
-    const dt =
-        clock.getDelta();
-
-    hoveredMode = null;
-
-    if (!session) {
-        return;
+      );
     }
 
-    let hideImagePressed = false;
+    // ==========================================
+    // LEITURA DOS CONTROLADORES
+    // ==========================================
 
-    const sources =
-        session.inputSources;
+    function updateInput() {
 
-    for (
-        let i = 0;
-        i < sources.length;
-        i++
-    ) {
+      const session =
+        renderer.xr.getSession();
 
-        const gamepad =
-            sources[i].gamepad;
+      const dt = clock.getDelta();
+
+      hoveredMode = null;
+
+      if (!session) {
+        return;
+      }
+
+      let hideImagePressed = false;
+
+      const sources = session.inputSources;
+
+      for (let i = 0; i < sources.length; i++) {
+
+        const gamepad = sources[i].gamepad;
 
         if (
-            !gamepad ||
-            gamepad.mapping !== "xr-standard"
+          !gamepad ||
+          gamepad.mapping !== "xr-standard"
         ) {
-            continue;
+          continue;
         }
 
         const controller =
-            renderer.xr.getController(i);
+          renderer.xr.getController(i);
 
         const trigger =
-            gamepad.buttons[0];
+          gamepad.buttons[0];
 
         const axButton =
-            gamepad.buttons[4];
+          gamepad.buttons[4];
 
-        const triggerPressed =
-            Boolean(trigger && trigger.pressed);
+        const triggerPressed = Boolean(
+          trigger && trigger.pressed
+        );
 
         const justPressed =
-            triggerPressed &&
-            !previousTriggerPressed[i];
+          triggerPressed &&
+          !previousTriggerPressed[i];
 
         const overPanel =
-            isPointerOverModePanel(controller);
+          isPointerOverModePanel(controller);
 
         const hoveredButton =
-            getHoveredModeButton(controller);
+          getHoveredModeButton(controller);
 
         if (hoveredButton) {
-
-            hoveredMode =
-                hoveredButton.mode;
+          hoveredMode = hoveredButton.mode;
         }
 
-        // ==================================
-        // CLIQUES NO PAINEL
-        // ==================================
+        // ====================================
+        // FIXAR / DESAFIXAR
+        // ====================================
 
         if (
-            justPressed &&
-            hoveredButton
+          justPressed &&
+          hoveredButton
         ) {
 
-            const selectedMode =
-                hoveredButton.mode;
+          if (hoveredButton.mode === "fix") {
 
-            if (selectedMode === "fix") {
+            imageFixed = !imageFixed;
 
-                imageFixed = !imageFixed;
+            console.log(
+              imageFixed
+                ? "POITA: IMAGEM FIXADA"
+                : "POITA: IMAGEM DESAFIXADA"
+            );
 
-                console.log(
-                    imageFixed
-                        ? "POITA: IMAGEM FIXADA"
-                        : "POITA: IMAGEM DESAFIXADA"
-                );
+          } else if (!imageFixed) {
 
-            } else if (!imageFixed) {
+            currentMode = hoveredButton.mode;
 
-                if (selectedMode === "rotate") {
-
-                    selectRotationMode();
-
-                } else {
-
-                    currentMode = selectedMode;
-
-                    console.log(
-                        "POITA MODO:",
-                        currentMode
-                    );
-                }
-            }
+            console.log(
+              "POITA modo:",
+              currentMode
+            );
+          }
         }
 
-        // ==================================
-        // ANALÓGICOS
-        // ==================================
+        // ====================================
+        // CONTROLES ANALÓGICOS
+        // ====================================
 
         if (
-            !imageFixed &&
-            gamepad.axes.length >= 4
+          !imageFixed &&
+          gamepad.axes.length >= 4
         ) {
 
-            const horizontal =
-                gamepad.axes[2];
+          const horizontal =
+            gamepad.axes[2];
 
-            const vertical =
-                gamepad.axes[3];
+          const vertical =
+            gamepad.axes[3];
 
-            // ESCALA E OPACIDADE
+          if (currentMode === "scale") {
 
-            if (currentMode === "scale") {
-
-                if (vertical > 0.7) {
-
-                    incrementScale(-dt);
-
-                } else if (vertical < -0.7) {
-
-                    incrementScale(dt);
-                }
-
-                if (horizontal > 0.7) {
-
-                    incrementOpacity(dt);
-
-                } else if (horizontal < -0.7) {
-
-                    incrementOpacity(-dt);
-                }
-
-            // MOVIMENTO X
-
-            } else if (currentMode === "x") {
-
-                if (horizontal > 0.25) {
-
-                    moveImage("x", dt);
-
-                } else if (horizontal < -0.25) {
-
-                    moveImage("x", -dt);
-                }
-
-            // MOVIMENTO Y
-
-            } else if (currentMode === "y") {
-
-                if (vertical < -0.25) {
-
-                    moveImage("y", dt);
-
-                } else if (vertical > 0.25) {
-
-                    moveImage("y", -dt);
-                }
-
-            // MOVIMENTO Z
-
-            } else if (currentMode === "z") {
-
-                if (vertical < -0.25) {
-
-                    moveImage("z", -dt);
-
-                } else if (vertical > 0.25) {
-
-                    moveImage("z", dt);
-                }
-
-            // ROTAÇÃO X / Y / Z
-
-            } else if (currentMode === "rotate") {
-
-                if (Math.abs(horizontal) > 0.25) {
-
-                    rotateImage(
-                        horizontal * dt
-                    );
-                }
+            if (vertical > 0.7) {
+              incrementScale(-dt);
             }
+
+            else if (vertical < -0.7) {
+              incrementScale(dt);
+            }
+
+            if (horizontal > 0.7) {
+              incrementOpacity(dt);
+            }
+
+            else if (horizontal < -0.7) {
+              incrementOpacity(-dt);
+            }
+          }
+
+          else if (currentMode === "x") {
+
+            if (horizontal > 0.25) {
+              moveImage("x", dt);
+            }
+
+            else if (horizontal < -0.25) {
+              moveImage("x", -dt);
+            }
+          }
+
+          else if (currentMode === "y") {
+
+            if (vertical < -0.25) {
+              moveImage("y", dt);
+            }
+
+            else if (vertical > 0.25) {
+              moveImage("y", -dt);
+            }
+          }
+
+          else if (currentMode === "z") {
+
+            if (vertical < -0.25) {
+              moveImage("z", -dt);
+            }
+
+            else if (vertical > 0.25) {
+              moveImage("z", dt);
+            }
+          }
         }
 
-        // ==================================
+        // ====================================
         // REPOSICIONAMENTO PELO GATILHO
-        // ==================================
+        // ====================================
+        //
+        // O gatilho não reposiciona a imagem
+        // quando ela está fixada.
+        //
+        // O painel permanece independente.
+        // ====================================
 
         if (
-            !imageFixed &&
-            !overPanel &&
-            triggerPressed &&
-            group
+          !imageFixed &&
+          !overPanel &&
+          triggerPressed &&
+          group
         ) {
 
-            controller.updateMatrixWorld(true);
+          controller.updateMatrixWorld(true);
 
-            const offset =
-                controller.localToWorld(
-                    new THREE.Vector3(
-                        0,
-                        0,
-                        -0.105
-                    )
-                );
-
-            group.position.copy(offset);
-
-            const worldQuaternion =
-                new THREE.Quaternion();
-
-            controller.getWorldQuaternion(
-                worldQuaternion
+          const offset =
+            controller.localToWorld(
+              new THREE.Vector3(
+                0,
+                0,
+                -0.105
+              )
             );
 
-            group.setRotationFromQuaternion(
-                worldQuaternion
-            );
+          group.position.copy(offset);
+
+          const worldQuaternion =
+            new THREE.Quaternion();
+
+          controller.getWorldQuaternion(
+            worldQuaternion
+          );
+
+          group.setRotationFromQuaternion(
+            worldQuaternion
+          );
         }
 
         previousTriggerPressed[i] =
-            triggerPressed;
-
-        // ==================================
-        // MOSTRAR / OCULTAR IMAGEM
-        // ==================================
+          triggerPressed;
 
         if (
-            axButton &&
-            axButton.pressed
+          axButton &&
+          axButton.pressed
         ) {
-
-            hideImagePressed = true;
+          hideImagePressed = true;
         }
-    }
+      }
 
-    updateModeButtonVisuals();
+      // Atualiza os botões sem recriar
+      // propriedades desnecessariamente.
 
-    if (
+      updateModeButtonVisuals();
+
+      // ====================================
+      // MOSTRAR / OCULTAR IMAGEM
+      // ====================================
+
+      if (
         !hideImagePressed &&
         previousDidPressHideImage &&
         imagePlane
-    ) {
+      ) {
 
         imagePlane.visible =
-            !imagePlane.visible;
+          !imagePlane.visible;
+      }
+
+      previousDidPressHideImage =
+        hideImagePressed;
     }
 
-    previousDidPressHideImage =
-        hideImagePressed;
-}
+  </script>
 
-</script>
+  <!-- ===================================== -->
+  <!-- CONTAINER DE RENDERIZAÇÃO -->
+  <!-- ===================================== -->
 
-<!-- ===================================== -->
-<!-- INTERFACE HTML -->
-<!-- ===================================== -->
+  <div id="container"></div>
 
-<div id="container"></div>
-
-<input
+  <input
     id="imageFileInput"
     type="file"
     accept="image/*"
     style="display:none;"
->
+  >
 
-<!-- TELA INICIAL -->
+  <!-- ===================================== -->
+  <!-- TELA INICIAL -->
+  <!-- ===================================== -->
 
-<div
+  <div
     id="poitaWelcome"
     class="poitaScreen"
->
+  >
     <div class="poitaCard">
 
-        <div class="poitaLogo">
-            POITA
-        </div>
+      <div class="poitaLogo">
+        POITA
+      </div>
 
-        <div class="poitaSubtitle">
-            MURALLOCK SYSTEM
-        </div>
+      <div class="poitaSubtitle">
+        MURALLOCK SYSTEM
+      </div>
 
-        <a
-            href="#"
-            id="enterPoitaLink"
-            class="poitaButton"
-        >
-            ENTRAR
-        </a>
+      <a
+        href="#"
+        id="enterPoitaLink"
+        class="poitaButton"
+      >
+        ENTRAR
+      </a>
 
     </div>
-</div>
+  </div>
 
-<!-- SELEÇÃO DA IMAGEM -->
+  <!-- ===================================== -->
+  <!-- TELA DE SELEÇÃO DA IMAGEM -->
+  <!-- ===================================== -->
 
-<div
+  <div
     id="poitaImageScreen"
     class="poitaScreen poitaHidden"
->
+  >
     <div class="poitaCard">
 
-        <div class="poitaLogo">
-            POITA
-        </div>
+      <div class="poitaLogo">
+        POITA
+      </div>
 
-        <div class="poitaSubtitle">
-            MURALLOCK SYSTEM
-        </div>
+      <div class="poitaSubtitle">
+        MURALLOCK SYSTEM
+      </div>
 
-        <a
-            href="#"
-            id="localImageLink"
-            class="poitaButton"
-        >
-            ABRIR IMAGEM
-        </a>
+      <a
+        href="#"
+        id="localImageLink"
+        class="poitaButton"
+      >
+        ABRIR IMAGEM
+      </a>
 
     </div>
-</div>
+  </div>
 
-<!-- IMAGEM CARREGADA -->
+  <!-- ===================================== -->
+  <!-- TELA DE CONFIRMAÇÃO -->
+  <!-- ===================================== -->
 
-<div
+  <div
     id="poitaReadyScreen"
     class="poitaScreen poitaHidden"
->
+  >
     <div class="poitaCard">
 
-        <div class="poitaLogo">
-            POITA
-        </div>
+      <div class="poitaLogo">
+        POITA
+      </div>
 
-        <div class="poitaSubtitle">
-            MURALLOCK SYSTEM
-        </div>
+      <div class="poitaSubtitle">
+        MURALLOCK SYSTEM
+      </div>
 
-        <div class="poitaPreview">
-
-            <img
-                id="poitaImagePreview"
-                alt="Imagem selecionada"
-            >
-
-        </div>
-
-        <div class="poitaStatus">
-            IMAGEM CARREGADA
-        </div>
-
-        <a
-            href="#"
-            id="startPoitaLink"
-            class="poitaButton"
+      <div class="poitaPreview">
+        <img
+          id="poitaImagePreview"
+          alt="Imagem selecionada"
         >
-            INICIAR
-        </a>
+      </div>
 
-        <a
-            href="#"
-            id="changePoitaImageLink"
-            class="poitaSecondaryButton"
-        >
-            TROCAR IMAGEM
-        </a>
+      <div class="poitaStatus">
+        IMAGEM CARREGADA
+      </div>
+
+      <a
+        href="#"
+        id="startPoitaLink"
+        class="poitaButton"
+      >
+        INICIAR
+      </a>
+
+      <a
+        href="#"
+        id="changePoitaImageLink"
+        class="poitaSecondaryButton"
+      >
+        TROCAR IMAGEM
+      </a>
 
     </div>
-</div>
+  </div>
 
 </body>
 </html>
